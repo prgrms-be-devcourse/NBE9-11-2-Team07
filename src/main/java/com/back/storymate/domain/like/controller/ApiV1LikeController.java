@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-public class LikeController {
+public class ApiV1LikeController {
 
     private final LikeService likeService;
     private final WorldService worldService;
