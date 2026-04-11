@@ -1,4 +1,4 @@
 package com.back.storymate.global.response;
 
-public class sample {
+public class Rq {
 }
