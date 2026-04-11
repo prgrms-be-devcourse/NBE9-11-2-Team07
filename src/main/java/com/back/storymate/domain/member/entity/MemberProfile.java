@@ -42,4 +42,15 @@ public class MemberProfile {
         this.username = username;
         this.bio = bio;
     }
+
+    // username 혹은 bio 하나만 수정하는 시나리오도 반영
+    public void updateProfile(String username, String bio) {
+        if (username != null && !username.isBlank()) {
+            this.username = username;
+        }
+
+        if (bio != null) {
+            this.bio = bio;
+        }
+    }
 }
