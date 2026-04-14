@@ -1,12 +1,10 @@
 spring:
   application:
     name: mozu
-  profiles:
-    active: dev
 
   datasource:
     # jdbc:mysql://주소:포트/DB이름
-    url: jdbc:mysql://localhost:3307/moju_db?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/moju_db?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
