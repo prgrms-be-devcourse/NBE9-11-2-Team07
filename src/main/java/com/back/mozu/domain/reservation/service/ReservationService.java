@@ -45,20 +45,28 @@ public class ReservationService {
             throw new ServiceException("해당 예약을 수정할 권한이 없습니다.");
         }
 
-        // 수정 된 예약의 시간대와 guestCount를 받아와서 변수로 선언
+        // 새로운 타임슬롯 조회
+        // TO DO: 새 DB 조회 로직 필요
+        // TO DO: 해당 DB에서 락 걸어줬는지 확인 필요
         TimeSlot newTimeSlot = timeSlotRepository.findByDateAndTime(request.date(), request.time())
                 .orElseThrow(() -> new ServiceException("해당 시간대는 존재하지 않습니다."));
 
-        int newGuestCount = request.guestCount();
+        // 새 타임슬롯 재고 확인 및 차감 (Occupy)
+        // 새 예약 인원만큼 자리가 있는지 확인하고 차감
+        // TO DO: 새 메서드 필요
+        // TO DO: guestCount가 재고보다 작은지 확인하는 로직 필요
+        newTimeSlot.occupy(request.guestCount());
+
+        // [새 메서드 필요] 기존 타임슬롯 재고 복구 (Release)
+        // 수정 전 예약되어 있던 인원만큼 현재 타임슬롯의 재고를 다시 늘려줌
+        // occupy로 예약 선점 완료 한 뒤에 release
+        reservation.getTimeSlot().release(reservation.getGuestCount());
 
         // 수정 데이터들 Reservation 엔티티에 있는 수정 메서드에 넣어주기
-        reservation.modifyReservation(newTimeSlot, newGuestCount);
+        reservation.modifyReservation(newTimeSlot, request.guestCount());
 
         // 업데이트 된 예약 사항 DTO로 반환
         return ReservationDto.Response.from(reservation);
-
-        // TO DO: 이전 예약 status 업데이트 && 새 예약 status 업데이트
-        // TO DO: 동시성 확인
     }
 
 
@@ -74,6 +82,10 @@ public class ReservationService {
             throw new ServiceException("해당 예약을 취소할 권한이 없습니다.");
         }
 
+        // 예약을 취소했으니 그만큼 좌석을 다시 늘려줘야 함
+        reservation.getTimeSlot().release(reservation.getGuestCount());
+
+        // 예약 상태 변경 (Status를 CANCELLED로)
         reservation.cancelReservation();
 
         return ReservationDto.Response.from(reservation);
