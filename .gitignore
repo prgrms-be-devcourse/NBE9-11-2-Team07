@@ -38,3 +38,7 @@ out/
 
 ### My SQL ###
 mysql_data/
+
+src/main/resources/application-dev.yaml
+
+docker-compose.override.yaml
