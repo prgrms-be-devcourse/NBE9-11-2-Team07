@@ -7,8 +7,8 @@ public record RsData<T>(
         String resultCode,
         T data
 ) {
-    public RsData(String msg, String resultCode) {
-        this(msg, resultCode, null);
+    public static <T> RsData<T> of(String resultCode, String msg, T data) {
+        return new RsData<>(msg, resultCode, data);
     }
 
     @JsonIgnore
@@ -16,4 +16,3 @@ public record RsData<T>(
         return Integer.parseInt(resultCode.split("-")[0]);
     }
 }
-
