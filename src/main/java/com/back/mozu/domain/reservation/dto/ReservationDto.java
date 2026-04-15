@@ -1,6 +1,7 @@
 package com.back.mozu.domain.reservation.dto;
 
 import com.back.mozu.domain.reservation.entity.Reservation;
+import com.back.mozu.domain.reservation.entity.ReservationStatus;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -28,7 +29,7 @@ public class ReservationDto {
     // 예약 결과 응답 및 상세 조회용
     public record Response(
             UUID reservationId,
-            String status,
+            ReservationStatus status,
             int guestCount,
             LocalDate date,
             LocalTime time,
