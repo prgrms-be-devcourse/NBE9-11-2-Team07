@@ -48,9 +48,7 @@ public class Reservation {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public void modifyReservation(TimeSlot newTimeSlot, int guestCount) {
-        this.timeSlot = newTimeSlot;
-        this.guestCount = guestCount;
+    public void modifyReservation() {
         this.status = "CONFIRMED";
     }
 
