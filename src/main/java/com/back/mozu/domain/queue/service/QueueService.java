@@ -1,4 +1,54 @@
 package com.back.mozu.domain.queue.service;
 
+import com.back.mozu.domain.queue.dto.QueueDto.AttemptRequest;
+import com.back.mozu.domain.queue.dto.QueueDto.AttemptResponse;
+import com.back.mozu.domain.queue.dto.QueueDto.StatusResponse;
+import com.back.mozu.domain.reservation.entity.Reservation;
+import com.back.mozu.domain.reservation.entity.ReservationStatus;
+import com.back.mozu.domain.reservation.entity.TimeSlot;
+import com.back.mozu.domain.reservation.repository.ReservationRepository;
+import com.back.mozu.domain.reservation.repository.TimeSlotRepository;
+import com.back.mozu.domain.reservation.service.ReservationAsyncProcessor;
+import jakarta.transaction.Transactional;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+// 메인 서비스
+@Service
+@RequiredArgsConstructor
 public class QueueService {
+
+    private final ReservationRepository reservationRepository;
+    private final TimeSlotRepository timeSlotRepository;
+    private final ReservationAsyncProcessor asyncProcessor;
+
+    // 예약을 데이터베이스에 저장하고 비동기 처리
+    @Transactional
+    public AttemptResponse enqueueAttempt(UUID customerId, AttemptRequest request) {
+        TimeSlot timeSlot = timeSlotRepository.findById(request.getTimeSlotId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 시간대입니다."));
+
+        // 객체 생성
+        Reservation reservation = Reservation.builder()
+                .customerId(customerId)
+                .timeSlot(timeSlot)
+                .guestCount(request.getGuestCount())
+                .status(ReservationStatus.PENDING)
+                .build();
+
+        reservationRepository.save(reservation);
+
+        asyncProcessor.processReservation(reservation.getId(), timeSlot.getId(), request.getGuestCount());
+        return new AttemptResponse(reservation.getId());
+    }
+
+    // 현재 상태 응답
+    @Transactional
+    public StatusResponse getAttemptStatus(UUID attemptId) {
+        Reservation reservation = reservationRepository.findById(attemptId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약 시도입니다."));
+
+        return new StatusResponse(reservation.getStatus());
+    }
 }
