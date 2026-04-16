@@ -11,6 +11,10 @@ public record RsData<T>(
         return new RsData<>(msg, resultCode, data);
     }
 
+    public RsData(String msg, String resultCode) {
+        this(msg, resultCode, null);
+    }
+
     @JsonIgnore
     public int getStatusCode() {
         return Integer.parseInt(resultCode.split("-")[0]);
