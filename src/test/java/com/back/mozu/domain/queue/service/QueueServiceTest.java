@@ -128,4 +128,23 @@ class QueueServiceTest {
         TimeSlot updatedSlot = timeSlotRepository.findById(timeSlot.getId()).orElseThrow();
         assertThat(updatedSlot.getStock()).isEqualTo(0);
     }
+
+    @Test
+    @DisplayName("남은 재고보다 예약 인원이 많을 시 실패 및 CANCELED 상태 반환")
+    void failWhenRequestExceedsStock() throws InterruptedException {
+
+        // 재고 5개
+        TimeSlot timeSlot = TimeSlot.builder()
+                .date(LocalDate.now()).time(LocalTime.now()).stock(5).build();
+        timeSlotRepository.save(timeSlot);
+
+        // 예약 6명
+        AttemptRequest request = new AttemptRequest(timeSlot.getId(), 6);
+        AttemptResponse response = queueService.enqueueAttempt(UUID.randomUUID(), request);
+
+        Thread.sleep(2000);
+
+        StatusResponse status = queueService.getAttemptStatus(response.getAttemptId());
+        assertThat(status.getStatus()).isEqualTo(ReservationStatus.CANCELED);
+    }
 }

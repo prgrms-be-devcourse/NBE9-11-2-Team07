@@ -29,7 +29,7 @@ public class ReservationAsyncProcessor {
             TimeSlot timeSlot = timeSlotRepository.findById(timeSlotId).orElseThrow();
             timeSlot.decreaseStock(guestCount); // 낙관적 락
             reservation.modifyReservation(); // 성공
-        } catch (ObjectOptimisticLockingFailureException | IllegalStateException e) {
+        } catch (ObjectOptimisticLockingFailureException | IllegalStateException | IllegalArgumentException e) {
             reservation.cancelReservation(); // 실패
         }
     }
