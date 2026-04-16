@@ -1,16 +1,14 @@
 package com.back.mozu.domain.setting.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
+
 import java.time.LocalTime;
 
 @Getter
 @Entity
 @Builder
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "restaurant_settings")
 public class RestaurantSettings {
@@ -28,10 +26,9 @@ public class RestaurantSettings {
     @Column(nullable = false)
     private LocalTime closingTime;
 
-    public void update(Integer totalTables, LocalTime openingTime, LocalTime closingTime){
+    public void update(Integer totalTables, LocalTime openingTime, LocalTime closingTime) {
         this.totalTables = totalTables;
         this.openingTime = openingTime;
         this.closingTime = closingTime;
     }
-
 }
