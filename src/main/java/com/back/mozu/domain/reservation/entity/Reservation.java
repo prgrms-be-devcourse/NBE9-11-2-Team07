@@ -57,10 +57,4 @@ public class Reservation {
     public void cancelReservation() {
         this.status = ReservationStatus.CANCELED;
     }
-
-    // 예약 내용 수정
-    public void update(TimeSlot newTimeSlot, int guestCount) {
-        this.timeSlot = newTimeSlot;
-        this.guestCount = guestCount;
-    }
 }
