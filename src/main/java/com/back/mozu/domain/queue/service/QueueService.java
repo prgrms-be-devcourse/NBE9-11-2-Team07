@@ -25,9 +25,17 @@ public class QueueService {
     private final TimeSlotRepository timeSlotRepository;
     private final ReservationAsyncProcessor asyncProcessor;
 
+
+
     // 예약을 데이터베이스에 저장하고 비동기 처리
     @Transactional
     public AttemptResponse enqueueAttempt(UUID customerId, AttemptRequest request) {
+
+        // 예약 인원 검증
+        if (request.getGuestCount() < 1) {
+            throw new IllegalArgumentException("예약 인원은 1명 이상이어야 합니다.");
+        }
+
         TimeSlot timeSlot = timeSlotRepository.findById(request.getTimeSlotId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 시간대입니다."));
 
