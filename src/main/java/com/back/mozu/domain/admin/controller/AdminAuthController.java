@@ -21,4 +21,8 @@ public class AdminAuthController {
         AdminLoginResponseDto response = adminAuthService.login(request);
         return ResponseEntity.ok(new RsData<>("로그인에 성공했습니다.", "200", response));
     }
+    @PostMapping("/logout")
+    public ResponseEntity<RsData<Void>> logout() {
+        return ResponseEntity.ok(new RsData<>("로그아웃 되었습니다.", "200", null));
+    }
 }
