@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 // 예약 CRUD 작업
 public interface ReservationRepository extends JpaRepository<Reservation, UUID> {
-    boolean existsByCustomerIdAndTimeSlotAndStatusNot(UUID customerId, TimeSlot timeSlot, ReservationStatus status);
+    boolean existsByUserIdAndTimeSlotAndStatusNot(UUID customerId, TimeSlot timeSlot, ReservationStatus status);
 }
