@@ -38,3 +38,6 @@ out/
 
 ### My SQL ###
 mysql_data/
+
+# custom
+.DS_Store
