@@ -41,3 +41,4 @@ mysql_data/
 
 # custom
 .DS_Store
+src/main/generated/
