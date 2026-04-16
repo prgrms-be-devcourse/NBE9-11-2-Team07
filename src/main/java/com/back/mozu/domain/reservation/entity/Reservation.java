@@ -16,5 +16,5 @@ public class Reservation {
 
     private UUID customerId;
 
-    private String status;
+    private ReservationStatus status;
 }
