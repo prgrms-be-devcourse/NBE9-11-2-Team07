@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.back.mozu.global.response.RsData;
+import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequiredArgsConstructor
@@ -15,7 +17,11 @@ public class ApiV1SettingController {
     private final SettingService settingService;
 
     @GetMapping("/settings")
-    public SettingDto.GetSettingResponse getSetting() {
-        return settingService.getSetting();
+    public ResponseEntity<RsData<SettingDto.GetSettingResponse>> getSetting() {
+        SettingDto.GetSettingResponse response = settingService.getSetting();
+
+        return ResponseEntity.ok(
+                RsData.of("200", "설정 조회에 성공했습니다.", response)
+        );
     }
 }
