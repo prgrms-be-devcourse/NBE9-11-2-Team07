@@ -25,7 +25,8 @@ public class ApiV1QueueController {
     // 예약 시도 생성 및 대기열 진입
     @PostMapping
     public RsData<AttemptResponse> createAttempt(@RequestBody AttemptRequest request) {
-        UUID customerId = UUID.randomUUID(); // 테스트용 임시 UUID
+        // 테스트용 임시 UUID -> Rq 코드와 병합했을 때 로그인한 유저의 ID 호출
+        UUID customerId = UUID.randomUUID();
         AttemptResponse response = queueService.enqueueAttempt(customerId, request);
         return RsData.of("202", "대기열 진입 성공", response);
     }
