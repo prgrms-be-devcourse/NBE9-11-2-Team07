@@ -33,7 +33,7 @@ public class Reservation {
     private UUID id;
 
     @Column(name = "user_id", columnDefinition = "BINARY(16)", nullable = false)
-    private UUID customerId;
+    private UUID userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "time_slot_id", columnDefinition = "BINARY(16)")

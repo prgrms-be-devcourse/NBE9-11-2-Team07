@@ -27,7 +27,7 @@ public class QueueService {
 
     // 예약을 데이터베이스에 저장하고 비동기 처리
     @Transactional
-    public AttemptResponse enqueueAttempt(UUID customerId, AttemptRequest request) {
+    public AttemptResponse enqueueAttempt(UUID userId, AttemptRequest request) {
 
         // 예약 인원 검증
         if (request.getGuestCount() < 1) {
@@ -38,8 +38,8 @@ public class QueueService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 시간대입니다."));
 
         // CANCELED 상태가 아닌 기존 예약 존재 여부 검사
-        boolean isDuplicate = reservationRepository.existsByCustomerIdAndTimeSlotAndStatusNot(
-                customerId, timeSlot, ReservationStatus.CANCELED
+        boolean isDuplicate = reservationRepository.existsByUserIdAndTimeSlotAndStatusNot(
+                userId, timeSlot, ReservationStatus.CANCELED
         );
 
         if (isDuplicate) {
@@ -48,7 +48,7 @@ public class QueueService {
 
         // 객체 생성
         Reservation reservation = Reservation.builder()
-                .customerId(customerId)
+                .userId(userId)
                 .timeSlot(timeSlot)
                 .guestCount(request.getGuestCount())
                 .status(ReservationStatus.PENDING)
