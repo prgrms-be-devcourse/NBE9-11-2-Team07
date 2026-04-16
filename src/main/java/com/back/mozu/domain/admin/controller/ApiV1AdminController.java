@@ -2,9 +2,11 @@ package com.back.mozu.domain.admin.controller;
 
 import com.back.mozu.domain.admin.dto.AdminDto;
 import com.back.mozu.domain.admin.service.AdminService;
+import com.back.mozu.global.response.RsData;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,11 +21,15 @@ public class ApiV1AdminController {
     private final AdminService adminService;
 
     @PostMapping("/reservations/{reservationId}/cancel")
-    public AdminDto.CancelReservationResponse cancelReservation(
+    public ResponseEntity<RsData<AdminDto.CancelReservationResponse>> cancelReservation(
             @PathVariable UUID reservationId,
             @Valid @RequestBody AdminDto.CancelReservationRequest request
     ) {
-        return adminService.cancelReservation(reservationId, request);
+        AdminDto.CancelReservationResponse response = adminService.cancelReservation(reservationId, request);
+
+        return ResponseEntity.ok(
+                RsData.of("200", "예약이 강제 취소되었습니다.", response)
+        );
     }
 }
 
