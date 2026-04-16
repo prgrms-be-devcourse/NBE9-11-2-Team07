@@ -1,53 +1,60 @@
 package com.back.mozu.domain.reservation.entity;
 
-
-import com.back.mozu.domain.customer.entity.Customer;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "reservations")
+@Table(name = "reservations") // 테이블명은 복수형이 관례야
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA용 기본 생성자 (외부에서 new Reservation() 직접 호출 불가)
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Reservation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "VARCHAR(36)")
-    private String id;
+    @Column(columnDefinition = "BINARY(16)")
+    private UUID id;
 
-    // LAZY: 즉시 로딩 X, customer 정보가 필요할 때만 조회 (성능 최적화)
-    // EAGER로 하면 예약 조회 시 무조건 유저도 같이 조회 → N+1 문제 발생 가능
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private Customer customer;
+    @Column(name = "user_id", columnDefinition = "BINARY(16)", nullable = false)
+    private UUID userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "time_slot_id", nullable = false)
+    @JoinColumn(name = "time_slot_id", columnDefinition = "BINARY(16)")
     private TimeSlot timeSlot;
 
-    @Column(name = "guest_count", nullable = false)
+    @Column(nullable = false)
     private int guestCount;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String status;
+    private ReservationStatus status; // PENDING, CONFIRMED, CANCELED
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Builder.Default
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    // 생성자에 @Builder: createdAt은 자동으로 현재 시간 설정
-    // 클래스에 @Builder 붙이면 매번 .createdAt(LocalDateTime.now()) 써줘야 함
-    @Builder
-    public Reservation(Customer customer, TimeSlot timeSlot, int guestCount, String status) {
-        this.customer = customer;
-        this.timeSlot = timeSlot;
-        this.guestCount = guestCount;
-        this.status = status;
-        this.createdAt = LocalDateTime.now(); // 자동으로 현재 시간 저장
+    public void modifyReservation() {
+        this.status = ReservationStatus.CONFIRMED;
+    }
+
+    public void cancelReservation() {
+        this.status = ReservationStatus.CANCELED;
     }
 }
