@@ -2,6 +2,7 @@ package com.back.mozu.domain.admin.service;
 
 import com.back.mozu.domain.admin.dto.AdminDto;
 import com.back.mozu.domain.reservation.entity.Reservation;
+import com.back.mozu.domain.reservation.entity.ReservationStatus;
 import com.back.mozu.domain.reservation.repository.ReservationRepository;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -24,15 +25,15 @@ public class AdminService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new IllegalArgumentException("예약을 찾을 수 없습니다."));
 
-        if ("CANCELED".equals(reservation.getStatus())) {
+        if (reservation.getStatus() == ReservationStatus.CANCELED) {
             throw new IllegalStateException("이미 취소된 예약입니다.");
         }
 
-        reservation.cancel();
+        reservation.cancelReservation();
 
         return new AdminDto.CancelReservationResponse(
                 reservation.getId(),
-                reservation.getStatus(),
+                reservation.getStatus().name(),
                 request.reason(),
                 LocalDateTime.now()
         );
