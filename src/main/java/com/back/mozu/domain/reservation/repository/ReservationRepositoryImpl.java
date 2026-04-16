@@ -1,6 +1,7 @@
 package com.back.mozu.domain.reservation.repository;
 
 import com.back.mozu.domain.reservation.entity.Reservation;
+import com.back.mozu.domain.reservation.entity.ReservationStatus;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-import static com.back.mozu.domain.customer.entity.QCustomer.customer;
 import static com.back.mozu.domain.reservation.entity.QReservation.reservation;
 import static com.back.mozu.domain.reservation.entity.QTimeSlot.timeSlot;
 
@@ -32,7 +32,6 @@ public class ReservationRepositoryImpl implements ReservationRepositoryCustom {
         // 힌트: queryFactory.selectFrom(), join().fetchJoin(), where(), offset(), limit(), fetch()
         List<Reservation> result = queryFactory
                 .selectFrom(reservation)
-                .join(reservation.customer, customer).fetchJoin()
                 .join(reservation.timeSlot, timeSlot).fetchJoin()
                 .where(dateEq(date), timeEq(time), statusEq(status))
                 .offset(pageable.getOffset())
@@ -68,8 +67,9 @@ public class ReservationRepositoryImpl implements ReservationRepositoryCustom {
         return time != null ? timeSlot.time.eq(time) : null;
     }
 
-    // status 조건 (null이면 무시)
+    // 수정
     private BooleanExpression statusEq(String status) {
-        return status != null ? reservation.status.eq(status) : null;
+        return status != null ? reservation.status.eq(ReservationStatus.valueOf(status)) : null;
     }
+
 }
