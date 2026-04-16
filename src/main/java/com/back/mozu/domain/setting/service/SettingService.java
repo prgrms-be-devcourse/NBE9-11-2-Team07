@@ -1,7 +1,7 @@
 package com.back.mozu.domain.setting.service;
 
 import com.back.mozu.domain.setting.dto.SettingDto;
-import com.back.mozu.domain.setting.entity.Setting;
+import com.back.mozu.domain.setting.entity.RestaurantSettings;
 import com.back.mozu.domain.setting.repository.SettingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ public class SettingService {
     private final SettingRepository settingRepository;
 
     public SettingDto.GetSettingResponse getSetting() {
-        Setting setting = settingRepository.findById(1)
+        RestaurantSettings setting = settingRepository.findById(1)
                 .orElseThrow(() -> new IllegalArgumentException("설정 정보를 찾을 수 없습니다."));
 
         return new SettingDto.GetSettingResponse(
