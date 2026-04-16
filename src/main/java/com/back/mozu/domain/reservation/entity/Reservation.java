@@ -19,13 +19,13 @@ public class Reservation {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "VARCHAR(36)")
-    private String id;
+    private UUID id;
 
     // LAZY: 즉시 로딩 X, customer 정보가 필요할 때만 조회 (성능 최적화)
     // EAGER로 하면 예약 조회 시 무조건 유저도 같이 조회 → N+1 문제 발생 가능
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private Customer customer;
+    private UUID userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "time_slot_id", nullable = false)
@@ -35,7 +35,7 @@ public class Reservation {
     private int guestCount;
 
     @Column(nullable = false, length = 20)
-    private String status;
+    private ReservationStatus status;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
