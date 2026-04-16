@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.back.mozu.domain.queue.dto.QueueDto.AttemptRequest;
+import com.back.mozu.domain.queue.dto.QueueDto.AttemptResponse;
+import com.back.mozu.domain.queue.dto.QueueDto.StatusResponse;
 import com.back.mozu.domain.reservation.entity.ReservationStatus;
 import com.back.mozu.domain.reservation.entity.TimeSlot;
 import com.back.mozu.domain.reservation.repository.ReservationRepository;
@@ -103,5 +105,27 @@ class QueueServiceTest {
         assertThatThrownBy(() -> queueService.getAttemptStatus(fakeAttemptId))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("존재하지 않는 예약 시도입니다.");
+    }
+
+    @Test
+    @DisplayName("남은 재고와 예약 인원 동일 시 성공 및 재고 값 0을 반환")
+    void successWhenExactStock() throws InterruptedException {
+
+        // 재고 5개
+        TimeSlot timeSlot = TimeSlot.builder()
+                .date(LocalDate.now()).time(LocalTime.now()).stock(5).build();
+        timeSlotRepository.save(timeSlot);
+
+        // 예약 5명
+        AttemptRequest request = new AttemptRequest(timeSlot.getId(), 5);
+        AttemptResponse response = queueService.enqueueAttempt(UUID.randomUUID(), request);
+
+        Thread.sleep(2000);
+
+        StatusResponse status = queueService.getAttemptStatus(response.getAttemptId());
+        assertThat(status.getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
+
+        TimeSlot updatedSlot = timeSlotRepository.findById(timeSlot.getId()).orElseThrow();
+        assertThat(updatedSlot.getStock()).isEqualTo(0);
     }
 }
