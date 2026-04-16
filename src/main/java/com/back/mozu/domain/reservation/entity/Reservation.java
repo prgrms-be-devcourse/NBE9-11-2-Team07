@@ -20,7 +20,7 @@ public class Reservation {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "BINARY(16)")
-    private UUID id;
+    private UUID userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", columnDefinition = "BINARY(16)")
@@ -34,7 +34,7 @@ public class Reservation {
     private int guestCount;
 
     @Column(nullable = false, length = 20)
-    private String status; // PENDING, CONFIRMED, CANCELED
+    private ReservationStatus status; // PENDING, CONFIRMED, CANCELED
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -42,10 +42,10 @@ public class Reservation {
     public void modifyReservation(TimeSlot newTimeSlot, int guestCount) {
         this.timeSlot = newTimeSlot;
         this.guestCount = guestCount;
-        this.status = "CONFIRMED";
+        this.status = ReservationStatus.CONFIRMED;
     }
 
     public void cancelReservation() {
-        this.status = "CANCELLED";
+        this.status = ReservationStatus.CANCELED
     }
 }
