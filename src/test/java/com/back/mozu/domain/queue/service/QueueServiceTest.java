@@ -1,6 +1,7 @@
 package com.back.mozu.domain.queue.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.back.mozu.domain.queue.dto.QueueDto.AttemptRequest;
 import com.back.mozu.domain.reservation.entity.ReservationStatus;
@@ -13,6 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,13 @@ class QueueServiceTest {
 
     @Autowired
     private ReservationRepository reservationRepository;
+
+    // 데이터베이스 초기화
+    @AfterEach
+    void cleanUp() {
+        reservationRepository.deleteAllInBatch();
+        timeSlotRepository.deleteAllInBatch();
+    }
 
     // MySQL 환경 필요
     @Test
@@ -65,5 +74,22 @@ class QueueServiceTest {
                 .filter(r -> r.getStatus() == ReservationStatus.CONFIRMED).count());
 
         assertThat(successCount).isEqualTo(10);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 타임슬롯 ID로 예약 시도 시 IllegalArgumentException 발생")
+    void throwExceptionWhenTimeSlotNotFound() {
+
+        // 랜덤 UUID 1
+        UUID fakeTimeSlotId = UUID.randomUUID();
+
+        // 랜덤 UUID 2
+        UUID customerId = UUID.randomUUID();
+
+        AttemptRequest request = new AttemptRequest(fakeTimeSlotId, 2);
+
+        assertThatThrownBy(() -> queueService.enqueueAttempt(customerId, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("존재하지 않는 시간대입니다.");
     }
 }
