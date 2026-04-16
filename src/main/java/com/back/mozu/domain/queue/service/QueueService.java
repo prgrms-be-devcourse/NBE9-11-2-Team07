@@ -13,6 +13,8 @@ import jakarta.transaction.Transactional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 // 메인 서비스
 @Service
@@ -39,7 +41,14 @@ public class QueueService {
 
         reservationRepository.save(reservation);
 
-        asyncProcessor.processReservation(reservation.getId(), timeSlot.getId(), request.getGuestCount());
+        // 비동기 작업을 데이터베이스 저장이 끝난 이후에 시작
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                asyncProcessor.processReservation(reservation.getId(), timeSlot.getId(), request.getGuestCount());
+            }
+        });
+
         return new AttemptResponse(reservation.getId());
     }
 
