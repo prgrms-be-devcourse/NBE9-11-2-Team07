@@ -14,7 +14,7 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private UUID customerId;
+    private UUID userId;
 
     private ReservationStatus status;
 }
