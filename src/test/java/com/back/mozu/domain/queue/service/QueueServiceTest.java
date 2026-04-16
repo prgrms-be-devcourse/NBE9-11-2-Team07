@@ -165,4 +165,24 @@ class QueueServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("예약 인원은 1명 이상이어야 합니다.");
     }
+
+    @Test
+    @DisplayName("동일한 인원이 같은 시간대에 중복 예약 시도 시 예외 발생")
+    void throwExceptionWhenDuplicateRequest() {
+
+        // 재고 5개
+        TimeSlot timeSlot = TimeSlot.builder()
+                .date(LocalDate.now()).time(LocalTime.now()).stock(5).build();
+        timeSlotRepository.save(timeSlot);
+        UUID customerId = UUID.randomUUID();
+
+        // 예약 2명
+        AttemptRequest request = new AttemptRequest(timeSlot.getId(), 2);
+
+        queueService.enqueueAttempt(customerId, request);
+
+        assertThatThrownBy(() -> queueService.enqueueAttempt(customerId, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("이미 처리 중이거나 완료된 예약이 있습니다.");
+    }
 }
