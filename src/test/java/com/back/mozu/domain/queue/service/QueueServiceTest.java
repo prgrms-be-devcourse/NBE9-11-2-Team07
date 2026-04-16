@@ -147,4 +147,22 @@ class QueueServiceTest {
         StatusResponse status = queueService.getAttemptStatus(response.getAttemptId());
         assertThat(status.getStatus()).isEqualTo(ReservationStatus.CANCELED);
     }
+
+    @Test
+    @DisplayName("예약 인원이 1명 미만일 시 IllegalArgumentException 발생")
+    void throwExceptionWhenInvalidGuestCount() {
+
+        // 재고 5개
+        TimeSlot timeSlot = TimeSlot.builder()
+                .date(LocalDate.now()).time(LocalTime.now()).stock(5).build();
+        timeSlotRepository.save(timeSlot);
+        UUID customerId = UUID.randomUUID();
+
+        // 예약 0명
+        AttemptRequest request = new AttemptRequest(timeSlot.getId(), 0);
+
+        assertThatThrownBy(() -> queueService.enqueueAttempt(customerId, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("예약 인원은 1명 이상이어야 합니다.");
+    }
 }
