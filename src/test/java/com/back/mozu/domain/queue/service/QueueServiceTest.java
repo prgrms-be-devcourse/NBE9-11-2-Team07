@@ -92,4 +92,16 @@ class QueueServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("존재하지 않는 시간대입니다.");
     }
+
+    @Test
+    @DisplayName("존재하지 않는 대기 ID로 상태를 조회하면 IllegalArgumentException 발생")
+    void throwExceptionWhenAttemptNotFound() {
+
+        // 랜덤 UUID
+        UUID fakeAttemptId = UUID.randomUUID();
+
+        assertThatThrownBy(() -> queueService.getAttemptStatus(fakeAttemptId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("존재하지 않는 예약 시도입니다.");
+    }
 }
