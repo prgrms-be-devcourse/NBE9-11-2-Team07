@@ -29,21 +29,18 @@ public class Reservation {
     private UUID userId;
 
     @Column(nullable = false)
-    private LocalDate date;
-
-    @Column(nullable = false)
-    private LocalTime time;
+    private TimeSlot timeSlot;
 
     @Column(nullable = false)
     private int guestCount;
 
     @Column(nullable = false, length = 20)
-    private String status;
+    private ReservationStatus status;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
     public void cancel() {
-        this.status = "CANCELED";
+        this.status = ReservationStatus.CANCELED;
     }
 }
