@@ -15,7 +15,7 @@ public class AdminLoginResponseDto {
     @Getter
     @Builder
     public static class AdminUserDto{
-        private UUID adminId;
+        private String adminId;
         private String loginId;
         private String name;
     }
