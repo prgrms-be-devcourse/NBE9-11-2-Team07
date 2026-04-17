@@ -1,4 +1,12 @@
 package com.back.mozu.domain.customer.dto;
 
-public record CustomerDto() {
+public class CustomerDto {
+
+    public record MeResponse(
+            String userId,
+            String name,
+            String email,
+            String role
+    ) {
+    }
 }

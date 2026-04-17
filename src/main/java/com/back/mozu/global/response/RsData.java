@@ -11,6 +11,10 @@ public record RsData<T>(
     public RsData(String msg, String resultCode, T data) {
         this(msg, resultCode, null, data);
     }
+    
+    public static <T> RsData<T> of(String resultCode, String msg, T data) {
+        return new RsData<>(msg, resultCode, data);
+    }
 
     public RsData(String msg, String resultCode) {
         this(msg, resultCode, null, null);
