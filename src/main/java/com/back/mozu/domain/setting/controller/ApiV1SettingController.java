@@ -1,25 +1,14 @@
 package com.back.mozu.domain.setting.controller;
 
-import com.back.mozu.domain.setting.dto.SettingDto;
-import com.back.mozu.domain.setting.service.SettingService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import com.back.mozu.global.response.RsData;
-import org.springframework.http.ResponseEntity;
 import com.back.mozu.domain.setting.dto.HolidayDto;
+import com.back.mozu.domain.setting.dto.SettingDto;
 import com.back.mozu.domain.setting.service.HolidayService;
+import com.back.mozu.domain.setting.service.SettingService;
 import com.back.mozu.global.response.RsData;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
