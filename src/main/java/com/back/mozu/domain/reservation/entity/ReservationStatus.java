@@ -1,5 +1,6 @@
 package com.back.mozu.domain.reservation.entity;
 
+// 예약 대기열
 public enum ReservationStatus {
     PENDING, // 대기열 진입 (폴링)
     CONFIRMED, // 승인

@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "reservations")
+@Table(name = "reservations") // 테이블명은 복수형이 관례야
 @Getter
 @Builder
 @AllArgsConstructor
@@ -31,13 +31,22 @@ public class Reservation {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private ReservationStatus status;
+    private ReservationStatus status; // PENDING, CONFIRMED, CANCELED
 
     @Builder.Default
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public void modifyReservation() {
+    public void confirmReservation() {
+        if (this.status != ReservationStatus.PENDING) {
+            throw new IllegalStateException("대기 중인 예약만 확정할 수 있습니다.");
+        }
+        this.status = ReservationStatus.CONFIRMED;
+    }
+
+    public void modifyReservation(TimeSlot newTimeSlot, int guestCount) {
+        this.timeSlot = newTimeSlot;
+        this.guestCount = guestCount;
         this.status = ReservationStatus.CONFIRMED;
     }
 
