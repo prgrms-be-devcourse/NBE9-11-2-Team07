@@ -1,23 +1,10 @@
 package com.back.mozu.domain.reservation.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "reservations") // 테이블명은 복수형이 관례야
@@ -50,7 +37,16 @@ public class Reservation {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public void modifyReservation() {
+    public void confirmReservation() {
+        if (this.status != ReservationStatus.PENDING) {
+            throw new IllegalStateException("대기 중인 예약만 확정할 수 있습니다.");
+        }
+        this.status = ReservationStatus.CONFIRMED;
+    }
+
+    public void modifyReservation(TimeSlot newTimeSlot, int guestCount) {
+        this.timeSlot = newTimeSlot;
+        this.guestCount = guestCount;
         this.status = ReservationStatus.CONFIRMED;
     }
 
