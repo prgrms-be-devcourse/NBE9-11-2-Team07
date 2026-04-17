@@ -41,3 +41,7 @@ mysql_data/
 
 # custom
 .DS_Store
+
+src/main/resources/application-dev.yaml
+
+docker-compose.override.yaml

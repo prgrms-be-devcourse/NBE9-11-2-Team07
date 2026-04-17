@@ -1,6 +1,9 @@
 spring:
   application:
     name: mozu
+  profiles:
+      active: dev
+
 
   datasource:
     # jdbc:mysql://주소:포트/DB이름
