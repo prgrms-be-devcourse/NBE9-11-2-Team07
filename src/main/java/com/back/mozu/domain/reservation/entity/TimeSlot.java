@@ -1,6 +1,10 @@
 package com.back.mozu.domain.reservation.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.*;
@@ -9,7 +13,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.UUID;
 
-// 타임슬롯 관리
 @Entity
 @Table(name = "time_slots")
 @Getter
@@ -18,7 +21,8 @@ import java.util.UUID;
 @Builder
 public class TimeSlot {
 
-    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private LocalDate date;
     private LocalTime time;
@@ -57,5 +61,13 @@ public class TimeSlot {
 
         // 재고 복구
         this.stock += guestCount;
+    }
+
+    @Builder
+    public TimeSlot(LocalDate date, LocalTime time, int stock) {
+        this.date = date;
+        this.time = time;
+        this.stock = stock;
+        this.version = 0;
     }
 }
