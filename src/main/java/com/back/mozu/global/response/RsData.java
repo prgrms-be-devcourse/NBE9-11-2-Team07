@@ -8,7 +8,6 @@ public record RsData<T>(
         String errorCode,
         T data
 ) {
-    // 정적 팩토리 메서드 (권장 사용 방식)
     public static <T> RsData<T> of(String resultCode, String msg, T data) {
         return new RsData<>(msg, resultCode, data);
     }
