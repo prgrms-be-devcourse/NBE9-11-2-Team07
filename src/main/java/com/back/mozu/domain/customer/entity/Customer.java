@@ -35,15 +35,20 @@ public class Customer {
     @Column(nullable = false, length = 20)
     private String role;
 
+    @Column(length = 255)
+    private String password;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Builder
-    public Customer(String email, String provider, String providerId, String role) {
+    public Customer(String email, String provider, String providerId, String role, String password) {
         this.email = email;
         this.provider = provider;
         this.providerId = providerId;
         this.role = role;
+        this.password = password;
         this.createdAt = LocalDateTime.now();
     }
+}
 }
