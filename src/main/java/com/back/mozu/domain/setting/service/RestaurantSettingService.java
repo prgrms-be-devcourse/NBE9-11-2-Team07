@@ -3,7 +3,7 @@ package com.back.mozu.domain.setting.service;
 import com.back.mozu.domain.setting.dto.SettingUpdateRequestDto;
 import com.back.mozu.domain.setting.dto.SettingUpdateResponseDto;
 import com.back.mozu.domain.setting.entity.RestaurantSettings;
-import com.back.mozu.domain.setting.repository.RestaruantSettingRepository;
+import com.back.mozu.domain.setting.repository.RestaurantSettingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +14,7 @@ import java.time.LocalTime;
 @RequiredArgsConstructor
 public class RestaurantSettingService {
 
-    private final RestaruantSettingRepository restaurantSettingRepository;
+    private final RestaurantSettingRepository restaurantSettingRepository;
 
     @Transactional
     public SettingUpdateResponseDto updateSettings(SettingUpdateRequestDto dto) {

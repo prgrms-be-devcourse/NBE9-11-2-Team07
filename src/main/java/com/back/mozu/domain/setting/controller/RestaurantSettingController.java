@@ -16,12 +16,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin")
 public class RestaurantSettingController {
-    private final RestaurantSettingService restaruantSettingService;
+
+    private final RestaurantSettingService restaurantSettingService;
+
     @PatchMapping("/settings")
     public ResponseEntity<RsData<SettingUpdateResponseDto>> updateSettings(
             @RequestBody SettingUpdateRequestDto dto){
-        SettingUpdateResponseDto response = restaruantSettingService.updateSettings(dto);
-        return ResponseEntity.ok(new RsData<>("설정이 저장되었습니다.","200",response));
 
+        SettingUpdateResponseDto response = restaurantSettingService.updateSettings(dto);
+
+        return ResponseEntity.ok(new RsData<>("설정이 저장되었습니다.","200",response));
     }
 }
