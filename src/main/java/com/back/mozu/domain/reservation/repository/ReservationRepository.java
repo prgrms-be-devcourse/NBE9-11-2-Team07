@@ -16,7 +16,7 @@ import java.util.UUID;
 public interface ReservationRepository extends JpaRepository<Reservation, UUID> {
     Optional<Reservation> findByUserIdAndStatus(UUID customerId, ReservationStatus status);
     boolean existsByUserIdAndTimeSlotAndStatusNot(UUID customerId, TimeSlot timeSlot, ReservationStatus status);
-    List<Reservation> findAllByCustomerId(UUID customerId);
-    int countByDate(LocalDate date);
+    List<Reservation> findAllByUserId(UUID customerId);
+    int countByTimeSlot_Date(LocalDate date);
     Page<Reservation> findAllWithFilters(LocalDate date, LocalTime time, String status, Pageable pageable);
 }
