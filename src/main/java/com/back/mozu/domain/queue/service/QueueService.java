@@ -15,6 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import com.back.mozu.domain.customer.entity.Customer;
+import com.back.mozu.domain.customer.service.CustomerService;
+import java.time.LocalDateTime;
 
 // 메인 서비스
 @Service
@@ -24,10 +27,18 @@ public class QueueService {
     private final ReservationRepository reservationRepository;
     private final TimeSlotRepository timeSlotRepository;
     private final ReservationAsyncProcessor asyncProcessor;
+    private final CustomerService customerService;
 
     // 예약을 데이터베이스에 저장하고 비동기 처리
     @Transactional
     public AttemptResponse enqueueAttempt(UUID userId, AttemptRequest request) {
+
+        Customer customer = customerService.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        if (customer.isPenaltyActive(LocalDateTime.now())) {
+            throw new IllegalArgumentException("현재 예약이 제한된 사용자입니다.");
+        }
 
         // 예약 인원 검증
         if (request.getGuestCount() < 1) {

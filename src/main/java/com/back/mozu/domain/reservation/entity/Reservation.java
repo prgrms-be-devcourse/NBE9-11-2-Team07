@@ -33,6 +33,15 @@ public class Reservation {
     @Column(nullable = false, length = 20)
     private ReservationStatus status; // PENDING, CONFIRMED, CANCELED
 
+    @Column(nullable = true)
+    private LocalDateTime cancelledAt;
+
+    @Column(nullable = true, length = 50)
+    private String cancelReason;
+
+    @Column(nullable = true)
+    private LocalDateTime reservationOpenedAt;
+
     @Builder.Default
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -50,7 +59,9 @@ public class Reservation {
         this.status = ReservationStatus.CONFIRMED;
     }
 
-    public void cancelReservation() {
+    public void cancelReservation(String cancelReason) {
         this.status = ReservationStatus.CANCELED;
+        this.cancelledAt = LocalDateTime.now();
+        this.cancelReason = cancelReason;
     }
 }
