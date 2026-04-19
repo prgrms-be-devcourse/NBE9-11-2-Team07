@@ -25,7 +25,7 @@ public class ReservationService {
     public List<ReservationDto.Response> getMyReservation(UUID customerId) {
 
         // 고객의 모든 reservation을 리스트 형태로 받아오기
-        List<Reservation> reservations = reservationRepository.findAllByCustomerId(customerId);
+        List<Reservation> reservations = reservationRepository.findAllByUserId(customerId);
 
         // DTO에 담아서 리스트로 반환하기
         return reservations.stream()
