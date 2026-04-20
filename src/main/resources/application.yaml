@@ -31,5 +31,5 @@ spring:
               - profile
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: thisIsATestSecretKeyForLocalDevelopment123456
   expiration: 86400000  # 24시간
