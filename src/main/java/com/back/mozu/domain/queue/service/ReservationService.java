@@ -19,7 +19,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 // 메인 서비스
 @Service
 @RequiredArgsConstructor
-public class QueueService {
+public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final TimeSlotRepository timeSlotRepository;
