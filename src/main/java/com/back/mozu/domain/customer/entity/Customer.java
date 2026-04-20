@@ -16,7 +16,7 @@ public class Customer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "VARCHAR(36)")
+    @Column(columnDefinition = "BINARY(16)")
     private String id;
 
     @Column(nullable = false, unique = true, length = 100)
