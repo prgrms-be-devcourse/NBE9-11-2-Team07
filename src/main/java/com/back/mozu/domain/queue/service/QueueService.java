@@ -45,7 +45,7 @@ public class QueueService {
             throw new IllegalArgumentException("예약 인원은 1명 이상이어야 합니다.");
         }
 
-        TimeSlot timeSlot = timeSlotRepository.findById(request.getTimeSlotId())
+        TimeSlot timeSlot = timeSlotRepository.findByDateAndTime(request.getDate(), request.getTime())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 시간대입니다."));
 
         // CANCELED 상태가 아닌 기존 예약 존재 여부 검사
