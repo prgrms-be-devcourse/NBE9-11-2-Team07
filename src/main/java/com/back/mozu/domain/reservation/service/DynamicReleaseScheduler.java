@@ -3,9 +3,7 @@ package com.back.mozu.domain.reservation.service;
 import com.back.mozu.domain.reservation.entity.Reservation;
 import com.back.mozu.domain.reservation.entity.ReservationStatus;
 import com.back.mozu.domain.reservation.repository.ReservationRepository;
-import com.back.mozu.domain.reservation.service.ReleaseScheduler;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.scheduling.TaskScheduler;
@@ -16,7 +14,6 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DynamicReleaseScheduler implements ReleaseScheduler, ApplicationRunner {
@@ -32,8 +29,6 @@ public class DynamicReleaseScheduler implements ReleaseScheduler, ApplicationRun
         List<Reservation> pendingList = reservationRepository
                 .findAllByStatus(ReservationStatus.CANCEL_PENDING);
 
-        log.info("서버 재시작 - CANCEL_PENDING 재등록: {}건", pendingList.size());
-
         for (Reservation reservation : pendingList) {
             schedule(reservation);
         }
@@ -47,8 +42,6 @@ public class DynamicReleaseScheduler implements ReleaseScheduler, ApplicationRun
                 () -> releaseStock(reservation.getId()),
                 reservation.getReleaseAt().toInstant(ZoneOffset.UTC)
         );
-        log.info("랜덤 반환 예약 - reservationId: {}, releaseAt: {}",
-                reservation.getId(), reservation.getReleaseAt());
     }
 
     // 실제 재고 반환
@@ -59,6 +52,5 @@ public class DynamicReleaseScheduler implements ReleaseScheduler, ApplicationRun
                 .orElseThrow();
         reservation.getTimeSlot().release(reservation.getGuestCount());
         reservation.cancelReservation(reservation.getCancelReason());
-        log.info("랜덤 반환 완료 - reservationId: {}", reservationId);
     }
 }
