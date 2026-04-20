@@ -2,6 +2,7 @@ package com.back.mozu.domain.reservation.service;
 
 import com.back.mozu.domain.reservation.dto.ReservationDto;
 import com.back.mozu.domain.reservation.entity.Reservation;
+import com.back.mozu.domain.reservation.entity.ReservationStatus;
 import com.back.mozu.domain.reservation.entity.TimeSlot;
 import com.back.mozu.domain.reservation.repository.ReservationRepository;
 import com.back.mozu.domain.reservation.repository.TimeSlotRepository;
@@ -13,7 +14,10 @@ import com.back.mozu.domain.customer.entity.Customer;
 import com.back.mozu.domain.customer.service.CustomerService;
 import java.time.LocalDateTime;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -23,6 +27,7 @@ public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final TimeSlotRepository timeSlotRepository;
+    private final ReleaseScheduler releaseScheduler;
     private final CustomerService customerService;
 
     // 내 예약 정보 받아오기 - GET "/api/v1/my/reservations"
@@ -75,11 +80,44 @@ public class ReservationService {
 
     // 내 예약 취소하기 - POST "/api/v1/my/reservations/{reservationId}/cancel"
     @Transactional
-    public ReservationDto.Response cancelMyReservation(UUID customerId, UUID reservationId) {
+    public ReservationDto.Response cancelMyReservation(UUID customerId, UUID reservationId, String cancelReason) {
 
         // 해당 예약 찾아오기
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ServiceException("예약을 찾을 수 없습니다."));
+
+        boolean isRandomRelease = false;
+
+        if(reservation.getReservationOpenedAt() != null){
+            if(LocalDateTime.now().isBefore(reservation.getReservationOpenedAt().plusMinutes(30))){
+                isRandomRelease = true;
+            }
+        }
+
+        if(reservation.getTimeSlot().getDate().equals(LocalDate.now())){
+            isRandomRelease = true;
+        }
+
+        int cancelCount = reservationRepository
+                .countByUserIdAndStatusAndCancelledAtAfter(
+                        customerId,
+                        ReservationStatus.CANCELED,
+                        LocalDateTime.now().minusMonths(3)
+                );
+
+        if (cancelCount >= 3) {
+            isRandomRelease = true;
+        }
+
+        if(isRandomRelease){
+            int randomMinutes = 10 + new Random().nextInt(51);
+            LocalDateTime releaseAt = LocalDateTime.now().plusMinutes(randomMinutes);
+            reservation.pendingCancel(cancelReason,releaseAt);
+            releaseScheduler.schedule(reservation);
+        } else{
+            reservation.getTimeSlot().release(reservation.getGuestCount());
+            reservation.cancelReservation(cancelReason);
+        }
 
         // 권한 체크: 이 예약의 주인(DB)이 현재 요청자(Token)와 같은지 체크
         if (!reservation.getUserId().equals(customerId)) {
@@ -102,11 +140,17 @@ public class ReservationService {
             cancelReason = "LATE_CANCEL";
         }
 
+        if(reservation.getStatus() == ReservationStatus.CANCELED){
+            throw new IllegalArgumentException("이미 취소된 예약입니다.");
+        }
+
+
         // 예약을 취소했으니 그만큼 좌석을 다시 늘려줘야 함
         reservation.getTimeSlot().release(reservation.getGuestCount());
 
         // 예약 상태 변경 (Status를 CANCELLED로)
         reservation.cancelReservation(cancelReason);
+
 
         return ReservationDto.Response.from(reservation);
     }
