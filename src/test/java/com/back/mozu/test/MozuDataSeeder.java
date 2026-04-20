@@ -1,4 +1,4 @@
-package test;
+package com.back.mozu.test;
 
 import com.back.mozu.domain.customer.entity.Customer;
 import com.back.mozu.domain.customer.repository.CustomerRepository;
