@@ -1,6 +1,6 @@
 INSERT INTO users (id, email, provider, provider_id, role, password, created_at)
 VALUES (
-           UUID(),
+           UUID_TO_BIN(UUID()),
            'admin@test.com',
            'local',
            'admin',

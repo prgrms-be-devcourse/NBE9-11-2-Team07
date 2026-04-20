@@ -32,7 +32,7 @@ public class ApiV1ReservationController {
         }
 
         // 내 예약 목록 가져오기
-        List<ReservationDto.Response> myReservations = reservationService.getMyReservation(UUID.fromString(actor.getId()));
+        List<ReservationDto.Response> myReservations = reservationService.getMyReservation(UUID.fromString(actor.getId().toString()));
 
         // 유저들의 모든 예약을 리스트 형태로 RsData 담아서 전달
         return new RsData<>(
@@ -57,7 +57,7 @@ public class ApiV1ReservationController {
 
         // 수정 서비스 로직 실행 후 결과물 받아오기
         ReservationDto.Response modifiedReservation =
-                reservationService.modifyMyReservation(reservationId, UUID.fromString(actor.getId()), request);
+                reservationService.modifyMyReservation(reservationId, UUID.fromString(actor.getId().toString()), request);
 
         // RsData 담아서 전달
         return new RsData<>(
@@ -80,7 +80,7 @@ public class ApiV1ReservationController {
 
         // 취소 서비스 로직 실행
         ReservationDto.Response cancelledReservation =
-                reservationService.cancelMyReservation(UUID.fromString(actor.getId()), reservationId,request.cancelReason());
+                reservationService.cancelMyReservation(UUID.fromString(actor.getId().toString()), reservationId,request.cancelReason());
 
         // RsData 담아서 전달
         return new RsData<>(
