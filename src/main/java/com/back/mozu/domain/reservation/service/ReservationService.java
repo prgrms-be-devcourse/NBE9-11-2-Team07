@@ -44,7 +44,7 @@ public class ReservationService {
 
     // 내 예약 정보 수정하기 - PATCH "/api/v1/my/reservations/{reservationId}"
     @Transactional
-    public ReservationDto.Response modifyMyReservation(UUID customerId, UUID reservationId, ReservationDto.Request request) {
+    public ReservationDto.Response modifyMyReservation(UUID reservationId, UUID customerId, ReservationDto.Request request) {
 
         // 해당 예약 찾아오기
         Reservation reservation = reservationRepository.findById(reservationId)
