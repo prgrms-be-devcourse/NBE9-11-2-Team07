@@ -31,7 +31,7 @@ public class ReservationAsyncProcessor {
                 .orElseThrow(() -> new IllegalArgumentException("타임슬롯을 찾을 수 없습니다."));
 
         try {
-            // 2. 재고 점유 (낙관적 락 발동!)
+            // 2. 재고 점유 (낙관적 락 발동)
             // occupy 내부에서 stock < guestCount 체크와 차감을 동시에 함
             timeSlot.occupy(guestCount);
 

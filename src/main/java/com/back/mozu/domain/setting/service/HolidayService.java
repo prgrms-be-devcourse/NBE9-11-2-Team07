@@ -4,12 +4,13 @@ import com.back.mozu.domain.reservation.repository.ReservationRepository;
 import com.back.mozu.domain.setting.dto.HolidayDto;
 import com.back.mozu.domain.setting.entity.Holiday;
 import com.back.mozu.domain.setting.repository.HolidayRepository;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +52,7 @@ public class HolidayService {
                 .build();
 
         Holiday savedHoliday = holidayRepository.save(holiday);
-        int conflictingReservationCount = reservationRepository.countByTimeSlotDate(savedHoliday.getDate());
+        int conflictingReservationCount = reservationRepository.countByTimeSlot_Date(savedHoliday.getDate());
 
         return new HolidayDto.CreateHolidayResponse(
                 savedHoliday.getDate(),
