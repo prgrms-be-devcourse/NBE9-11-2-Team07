@@ -26,7 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class ReservationServiceTest {
 
     @Autowired
-    private ReservationService reservationService;
+    private QueueService queueService;
 
     @Autowired
     private TimeSlotRepository timeSlotRepository;
@@ -63,7 +63,7 @@ class ReservationServiceTest {
         for (int i = 0; i < threadCount; i++) {
             executorService.execute(() -> {
                 try {
-                    reservationService.enqueueAttempt(UUID.randomUUID(), new AttemptRequest(slotId, 1));
+                    queueService.enqueueAttempt(UUID.randomUUID(), new AttemptRequest(slotId, 1));
                 } finally {
                     latch.countDown();
                 }
@@ -90,7 +90,7 @@ class ReservationServiceTest {
 
         AttemptRequest request = new AttemptRequest(fakeTimeSlotId, 2);
 
-        assertThatThrownBy(() -> reservationService.enqueueAttempt(customerId, request))
+        assertThatThrownBy(() -> queueService.enqueueAttempt(customerId, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("존재하지 않는 시간대입니다.");
     }
@@ -102,7 +102,7 @@ class ReservationServiceTest {
         // 랜덤 UUID
         UUID fakeAttemptId = UUID.randomUUID();
 
-        assertThatThrownBy(() -> reservationService.getAttemptStatus(fakeAttemptId))
+        assertThatThrownBy(() -> queueService.getAttemptStatus(fakeAttemptId))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("존재하지 않는 예약 시도입니다.");
     }
@@ -118,11 +118,11 @@ class ReservationServiceTest {
 
         // 예약 5명
         AttemptRequest request = new AttemptRequest(timeSlot.getId(), 5);
-        AttemptResponse response = reservationService.enqueueAttempt(UUID.randomUUID(), request);
+        AttemptResponse response = queueService.enqueueAttempt(UUID.randomUUID(), request);
 
         Thread.sleep(2000);
 
-        StatusResponse status = reservationService.getAttemptStatus(response.getAttemptId());
+        StatusResponse status = queueService.getAttemptStatus(response.getAttemptId());
         assertThat(status.getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
 
         TimeSlot updatedSlot = timeSlotRepository.findById(timeSlot.getId()).orElseThrow();
@@ -140,11 +140,11 @@ class ReservationServiceTest {
 
         // 예약 6명
         AttemptRequest request = new AttemptRequest(timeSlot.getId(), 6);
-        AttemptResponse response = reservationService.enqueueAttempt(UUID.randomUUID(), request);
+        AttemptResponse response = queueService.enqueueAttempt(UUID.randomUUID(), request);
 
         Thread.sleep(2000);
 
-        StatusResponse status = reservationService.getAttemptStatus(response.getAttemptId());
+        StatusResponse status = queueService.getAttemptStatus(response.getAttemptId());
         assertThat(status.getStatus()).isEqualTo(ReservationStatus.CANCELED);
     }
 
@@ -161,7 +161,7 @@ class ReservationServiceTest {
         // 예약 0명
         AttemptRequest request = new AttemptRequest(timeSlot.getId(), 0);
 
-        assertThatThrownBy(() -> reservationService.enqueueAttempt(customerId, request))
+        assertThatThrownBy(() -> queueService.enqueueAttempt(customerId, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("예약 인원은 1명 이상이어야 합니다.");
     }
@@ -179,9 +179,9 @@ class ReservationServiceTest {
         // 예약 2명
         AttemptRequest request = new AttemptRequest(timeSlot.getId(), 2);
 
-        reservationService.enqueueAttempt(customerId, request);
+        queueService.enqueueAttempt(customerId, request);
 
-        assertThatThrownBy(() -> reservationService.enqueueAttempt(customerId, request))
+        assertThatThrownBy(() -> queueService.enqueueAttempt(customerId, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("이미 처리 중이거나 완료된 예약이 있습니다.");
     }
