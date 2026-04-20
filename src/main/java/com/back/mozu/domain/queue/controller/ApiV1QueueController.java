@@ -35,7 +35,7 @@ public class ApiV1QueueController {
         }
 
         // 테스트용 임시 UUID -> Rq 코드와 병합했을 때 로그인한 유저의 ID 호출
-        UUID customerId = UUID.fromString(actor.getId().toString());
+        UUID customerId = actor.getId();
         AttemptResponse response = queueService.enqueueAttempt(customerId, request);
         return RsData.of("202", "대기열 진입 성공", response);
     }

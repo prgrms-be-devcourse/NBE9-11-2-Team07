@@ -23,6 +23,7 @@ public class TimeSlot {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "BINARY(16)")
     private UUID id;
     private LocalDate date;
     private LocalTime time;
