@@ -4,7 +4,6 @@ import com.back.mozu.domain.reservation.entity.Reservation;
 import com.back.mozu.domain.reservation.entity.ReservationStatus;
 import com.back.mozu.domain.reservation.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -16,7 +15,6 @@ import java.util.List;
 @Primary
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class StaticReleaseScheduler implements ReleaseScheduler {
 
     private final ReservationRepository reservationRepository;
@@ -26,7 +24,8 @@ public class StaticReleaseScheduler implements ReleaseScheduler {
         // 나중에 구현
     }
 
-    @Scheduled(fixedRate = 5000)
+    // 1분마다 CANCEL_PENDING 상태 예약 처리
+    @Scheduled(fixedRate = 60000)
     @Transactional
     public void processRandomRelease() {
         // CANCEL_PENDING + releaseAt 지난 예약 조회
@@ -35,13 +34,11 @@ public class StaticReleaseScheduler implements ReleaseScheduler {
                         ReservationStatus.CANCEL_PENDING,
                         LocalDateTime.now()
                 );
-        log.info("처리할 CANCEL_PENDING 예약 수: {}", pendingList.size());
-        // 재고 반환
-        // CANCELED로 변경
-        for(Reservation reservation : pendingList){
+
+        // 재고 반환 후 CANCELED로 변경
+        for (Reservation reservation : pendingList) {
             reservation.getTimeSlot().release(reservation.getGuestCount());
             reservation.cancelReservation(reservation.getCancelReason());
         }
-
     }
 }
