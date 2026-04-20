@@ -10,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.back.mozu.domain.customer.entity.Customer;
+import com.back.mozu.domain.customer.service.CustomerService;
+import java.time.LocalDateTime;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,6 +28,7 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final TimeSlotRepository timeSlotRepository;
     private final ReleaseScheduler releaseScheduler;
+    private final CustomerService customerService;
 
     // 내 예약 정보 받아오기 - GET "/api/v1/my/reservations"
     public List<ReservationDto.Response> getMyReservation(UUID customerId) {
@@ -39,6 +43,7 @@ public class ReservationService {
     }
 
     // 내 예약 정보 수정하기 - PATCH "/api/v1/my/reservations/{reservationId}"
+    @Transactional
     public ReservationDto.Response modifyMyReservation(UUID customerId, UUID reservationId, ReservationDto.Request request) {
 
         // 해당 예약 찾아오기
@@ -117,6 +122,22 @@ public class ReservationService {
         // 권한 체크: 이 예약의 주인(DB)이 현재 요청자(Token)와 같은지 체크
         if (!reservation.getUserId().equals(customerId)) {
             throw new ServiceException("해당 예약을 취소할 권한이 없습니다.");
+        }
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime reservationDateTime = LocalDateTime.of(
+                reservation.getTimeSlot().getDate(),
+                reservation.getTimeSlot().getTime()
+        );
+
+        boolean isWithin24Hours = reservationDateTime.isBefore(now.plusHours(24));
+
+        String cancelReason = "USER_CANCEL";
+
+        if (isWithin24Hours) {
+            Customer customer = customerService.findById(customerId)
+                    .orElseThrow(() -> new ServiceException("사용자를 찾을 수 없습니다."));
+            customer.applyPenaltyUntil(now.plusMonths(3));
+            cancelReason = "LATE_CANCEL";
         }
 
         if(reservation.getStatus() == ReservationStatus.CANCELED){

@@ -41,16 +41,16 @@ public class ReservationAsyncProcessor {
         } catch (ObjectOptimisticLockingFailureException e) {
             // [CASE A] 다른 유저가 찰나의 순간에 먼저 가져감 (낙관적 락 충돌)
             // 재고는 실제로 안 깎였으므로 예약만 취소 처리
-            reservation.cancelReservation("시스템 오류로 인한 자동 취소");
+            reservation.cancelReservation("OPTIMISTIC_LOCK_FAIL");
 
         } catch (IllegalArgumentException | IllegalStateException e) {
             // [CASE B] 재고 부족이거나 이미 취소된 건인 경우
-            reservation.cancelReservation("재고 부족으로 인한 자동 취소");
+            reservation.cancelReservation("RESERVATION_FAILED");
             // 혹시 모르니 여기서도 재고는 건드리지 않음 (이미 occupy에서 실패했으므로)
 
         } catch (Exception e) {
             // [CASE C] 그 외 예상치 못한 시스템 에러 (DB 연결 끊김 등)
-            reservation.cancelReservation("시스템 오류로 인한 자동취소");
+            reservation.cancelReservation("SYSTEM_ERROR");
             // 만약 occupy는 성공했는데 여기서 터졌다면? 안전하게 재고를 돌려줌
             timeSlot.release(guestCount);
         }
