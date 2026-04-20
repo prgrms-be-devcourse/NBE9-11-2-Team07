@@ -45,16 +45,7 @@ public class Reservation {
     @Builder.Default
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
-
-    @Column(nullable = true)
-    private LocalDateTime cancelledAt;
-
-    @Column(nullable = true, length = 50)
-    private String cancelReason;
-
-    @Column(nullable = true)
-    private LocalDateTime reservationOpenedAt;
+    
 
     @Column(nullable = true)
     private LocalDateTime releaseAt;

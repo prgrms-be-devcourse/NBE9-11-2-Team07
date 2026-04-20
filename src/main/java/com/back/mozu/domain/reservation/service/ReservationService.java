@@ -131,8 +131,6 @@ public class ReservationService {
 
         boolean isWithin24Hours = reservationDateTime.isBefore(now.plusHours(24));
 
-        String cancelReason = "USER_CANCEL";
-
         if (isWithin24Hours) {
             Customer customer = customerService.findById(customerId)
                     .orElseThrow(() -> new ServiceException("사용자를 찾을 수 없습니다."));
