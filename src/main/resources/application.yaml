@@ -29,6 +29,10 @@ spring:
             scope:
               - email
               - profile
+  data:
+    redis:
+      host: localhost   # 로컬 개발 환경
+      port: 6379        # Redis 기본 포트
 
 jwt:
   secret: thisIsATestSecretKeyForLocalDevelopment123456
