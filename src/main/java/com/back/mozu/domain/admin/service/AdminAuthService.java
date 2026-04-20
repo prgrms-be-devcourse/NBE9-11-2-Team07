@@ -18,8 +18,6 @@ public class AdminAuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
 
-
-
     public AdminLoginResponseDto login(AdminLoginRequestDto request) {
         // email로 관리자 찾기 (loginId = email)
         Customer customer = customerRepository.findByEmail(request.getLoginId())

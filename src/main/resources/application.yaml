@@ -2,15 +2,17 @@ spring:
   application:
     name: mozu
   profiles:
-      active: dev
-
+    active: dev
 
   datasource:
-    # jdbc:mysql://주소:포트/DB이름
     url: jdbc:mysql://localhost:3306/moju_db?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+  sql:
+    init:
+      mode: always
 
   jpa:
     hibernate:
@@ -19,6 +21,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        defer-datasource-initialization: true
   security:
     oauth2:
       client:
@@ -29,11 +32,8 @@ spring:
             scope:
               - email
               - profile
-  data:
-    redis:
-      host: localhost   # 로컬 개발 환경
-      port: 6379        # Redis 기본 포트
+            redirect-uri: http://localhost:8080/login/oauth2/code/google
 
 jwt:
   secret: thisIsATestSecretKeyForLocalDevelopment123456
-  expiration: 86400000  # 24시간
+  expiration: 86400000
