@@ -51,7 +51,7 @@ public class HolidayService {
                 .build();
 
         Holiday savedHoliday = holidayRepository.save(holiday);
-        int conflictingReservationCount = reservationRepository.countByDate(savedHoliday.getDate());
+        int conflictingReservationCount = reservationRepository.countByTimeSlotDate(savedHoliday.getDate());
 
         return new HolidayDto.CreateHolidayResponse(
                 savedHoliday.getDate(),
