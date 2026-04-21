@@ -23,7 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ReservationServiceTest {
+class QueueServiceTest {
 
     @Autowired
     private QueueService queueService;
@@ -49,21 +49,20 @@ class ReservationServiceTest {
         ExecutorService executorService = Executors.newFixedThreadPool(32);
         CountDownLatch latch = new CountDownLatch(threadCount);
 
+        LocalDate date = LocalDate.now();
+        LocalTime time = LocalTime.now();
+
         // 테스트용 타임슬롯 재고 10개 생성
         TimeSlot timeSlot = TimeSlot.builder()
-                .date(LocalDate.now())
-                .time(LocalTime.now())
-                .stock(10)
-                .build();
+                .date(date).time(time).stock(10).build();
 
         timeSlotRepository.save(timeSlot);
-        UUID slotId = timeSlot.getId();
 
         // 동시에 100개의 예약 시도 요청
         for (int i = 0; i < threadCount; i++) {
             executorService.execute(() -> {
                 try {
-                    queueService.enqueueAttempt(UUID.randomUUID(), new AttemptRequest(slotId, 1));
+                    queueService.enqueueAttempt(UUID.randomUUID(), new AttemptRequest(date, time, 1));
                 } finally {
                     latch.countDown();
                 }
@@ -82,13 +81,14 @@ class ReservationServiceTest {
     @DisplayName("존재하지 않는 타임슬롯 ID로 예약 시도 시 IllegalArgumentException 발생")
     void throwExceptionWhenTimeSlotNotFound() {
 
-        // 랜덤 UUID 1
-        UUID fakeTimeSlotId = UUID.randomUUID();
+        // 데이터베이스에 없는 시간대 설정
+        LocalDate fakeDate = LocalDate.now().plusDays(100);
+        LocalTime fakeTime = LocalTime.now();
 
-        // 랜덤 UUID 2
+        // 랜덤 UUID
         UUID customerId = UUID.randomUUID();
 
-        AttemptRequest request = new AttemptRequest(fakeTimeSlotId, 2);
+        AttemptRequest request = new AttemptRequest(fakeDate, fakeTime, 2);
 
         assertThatThrownBy(() -> queueService.enqueueAttempt(customerId, request))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -111,13 +111,16 @@ class ReservationServiceTest {
     @DisplayName("남은 재고와 예약 인원 동일 시 성공 및 재고 값 0을 반환")
     void successWhenExactStock() throws InterruptedException {
 
+        LocalDate date = LocalDate.now();
+        LocalTime time = LocalTime.now();
+
         // 재고 5개
         TimeSlot timeSlot = TimeSlot.builder()
-                .date(LocalDate.now()).time(LocalTime.now()).stock(5).build();
+                .date(date).time(time).stock(5).build();
         timeSlotRepository.save(timeSlot);
 
         // 예약 5명
-        AttemptRequest request = new AttemptRequest(timeSlot.getId(), 5);
+        AttemptRequest request = new AttemptRequest(date, time, 5);
         AttemptResponse response = queueService.enqueueAttempt(UUID.randomUUID(), request);
 
         Thread.sleep(2000);
@@ -133,13 +136,16 @@ class ReservationServiceTest {
     @DisplayName("남은 재고보다 예약 인원이 많을 시 실패 및 CANCELED 상태 반환")
     void failWhenRequestExceedsStock() throws InterruptedException {
 
+        LocalDate date = LocalDate.now();
+        LocalTime time = LocalTime.now();
+
         // 재고 5개
         TimeSlot timeSlot = TimeSlot.builder()
-                .date(LocalDate.now()).time(LocalTime.now()).stock(5).build();
+                .date(date).time(time).stock(5).build();
         timeSlotRepository.save(timeSlot);
 
         // 예약 6명
-        AttemptRequest request = new AttemptRequest(timeSlot.getId(), 6);
+        AttemptRequest request = new AttemptRequest(date, time, 6);
         AttemptResponse response = queueService.enqueueAttempt(UUID.randomUUID(), request);
 
         Thread.sleep(2000);
@@ -152,14 +158,17 @@ class ReservationServiceTest {
     @DisplayName("예약 인원이 1명 미만일 시 IllegalArgumentException 발생")
     void throwExceptionWhenInvalidGuestCount() {
 
+        LocalDate date = LocalDate.now();
+        LocalTime time = LocalTime.now();
+
         // 재고 5개
         TimeSlot timeSlot = TimeSlot.builder()
-                .date(LocalDate.now()).time(LocalTime.now()).stock(5).build();
+                .date(date).time(time).stock(5).build();
         timeSlotRepository.save(timeSlot);
         UUID customerId = UUID.randomUUID();
 
         // 예약 0명
-        AttemptRequest request = new AttemptRequest(timeSlot.getId(), 0);
+        AttemptRequest request = new AttemptRequest(date, time, 0);
 
         assertThatThrownBy(() -> queueService.enqueueAttempt(customerId, request))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -170,14 +179,17 @@ class ReservationServiceTest {
     @DisplayName("동일한 인원이 같은 시간대에 중복 예약 시도 시 예외 발생")
     void throwExceptionWhenDuplicateRequest() {
 
+        LocalDate date = LocalDate.now();
+        LocalTime time = LocalTime.now();
+
         // 재고 5개
         TimeSlot timeSlot = TimeSlot.builder()
-                .date(LocalDate.now()).time(LocalTime.now()).stock(5).build();
+                .date(date).time(time).stock(5).build();
         timeSlotRepository.save(timeSlot);
         UUID customerId = UUID.randomUUID();
 
         // 예약 2명
-        AttemptRequest request = new AttemptRequest(timeSlot.getId(), 2);
+        AttemptRequest request = new AttemptRequest(date, time, 2);
 
         queueService.enqueueAttempt(customerId, request);
 
