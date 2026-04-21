@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -22,7 +23,6 @@ import com.back.mozu.domain.customer.service.CustomerService;
 import java.time.LocalDateTime;
 
 import java.time.Duration;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,6 +37,7 @@ public class QueueService {
     private final ReservationAsyncProcessor asyncProcessor;
     private final CustomerService customerService;
     private final RedisUtil redisUtil;
+    private final RedisTemplate<String, String> redisTemplate;
 
     // 1건당 평균 처리 시간 (초) - 예상 대기 시간 계산에 사용
     private static final long AVG_PROCESS_SECONDS = 3L;
@@ -168,10 +169,21 @@ public class QueueService {
         }
 
         String queueKey = RedisUtil.queueKey(timeSlotId.toString());
-        for (Reservation r : pendings) {
-            // createdAt을 score로 사용 → DB 저장 순서 = 대기열 순서 유지
-            double score = r.getCreatedAt().toEpochSecond(ZoneOffset.UTC) * 1000.0;
-            redisUtil.zAdd(queueKey, r.getUserId().toString(), score);
+
+        // 기존 키 완전 삭제 후 재구성 (완전 복구 방식)
+        // 이유: recoverQueueFromDB는 여러 유저가 동시에 폴링하면 여러 번 호출될 수 있음
+        //       부분 복구(zAdd만)는 호출마다 기존 데이터의 score가 업데이트되어 순번이 바뀜 → 멱등성 X
+        //       완전 삭제 후 재구성하면 몇 번 호출돼도 항상 DB 기준으로 동일한 결과 → 멱등성 O
+        //       DB가 Source of Truth이므로 Redis 기존 데이터를 신뢰하지 않는 것이 원칙에도 맞음
+        redisTemplate.delete(queueKey);
+
+        for (int i = 0; i < pendings.size(); i++) {
+            Reservation r = pendings.get(i);
+            // score = i (0, 1, 2, ...) 로 순번 부여
+            // createdAt을 score로 쓰면 MySQL DATETIME이 초 단위라 같은 초에 생성된 레코드는 score가 동일해짐
+            // → Redis가 UUID 사전순으로 정렬 → 원래 순서 보장 안 됨
+            // i를 score로 쓰면 DB ORDER BY createdAt 순서가 score에 그대로 반영되어 순번 보장
+            redisUtil.zAdd(queueKey, r.getUserId().toString(), i);
             redisUtil.set(RedisUtil.waitingKey(r.getUserId().toString()), r.getId().toString(), QUEUE_TTL);
         }
 
