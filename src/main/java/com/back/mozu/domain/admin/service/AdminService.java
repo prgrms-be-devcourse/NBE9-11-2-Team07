@@ -2,6 +2,8 @@ package com.back.mozu.domain.admin.service;
 
 import com.back.mozu.domain.admin.dto.AdminDto;
 import com.back.mozu.domain.admin.dto.AdminReservationDto;
+import com.back.mozu.domain.customer.entity.Customer;
+import com.back.mozu.domain.customer.repository.CustomerRepository;
 import com.back.mozu.domain.reservation.entity.Reservation;
 import com.back.mozu.domain.reservation.entity.ReservationStatus;
 import com.back.mozu.domain.reservation.repository.ReservationRepository;
@@ -15,9 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +26,7 @@ import java.util.UUID;
 public class AdminService {
 
     private final ReservationRepository reservationRepository;
+    private final CustomerRepository customerRepository;
 
     @Transactional(readOnly = true)
     public Page<AdminReservationDto> getReservations(
@@ -36,8 +38,19 @@ public class AdminService {
         Page<Reservation> reservations = reservationRepository.findAllWithFilters(date, time, status, pageable);
 
         List<AdminReservationDto> dtoList = new ArrayList<>();
-        for (Reservation reservation : reservations.getContent()) {
-            dtoList.add(new AdminReservationDto(reservation));
+        List<Reservation> reservationList = reservations.getContent();
+
+        Set<UUID> userIds = reservationList.stream()
+                .map(Reservation::getUserId)
+                .collect(Collectors.toSet());
+
+        Map<UUID, Customer> customerMap = customerRepository.findAllById(userIds)
+                .stream()
+                .collect(Collectors.toMap(Customer::getId, c -> c));
+
+        for (Reservation reservation : reservationList) {
+            Customer customer = customerMap.get(reservation.getUserId());
+            dtoList.add(new AdminReservationDto(reservation, customer));
         }
 
         return new PageImpl<>(
