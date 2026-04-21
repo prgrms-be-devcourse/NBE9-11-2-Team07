@@ -28,18 +28,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = resolveToken(request);
 
-        if (token != null && jwtProvider.validateToken(token)) {
-            String userId = jwtProvider.getUserId(token);
-            String role = jwtProvider.getRole(token);
+        if (token != null) {
+            if (jwtProvider.validateToken(token)) {
+                String userId = jwtProvider.getUserId(token);
+                String role = jwtProvider.getRole(token);
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            userId,
-                            null,
-                            List.of(new SimpleGrantedAuthority("ROLE_" + role))
-                    );
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                userId,
+                                null,
+                                List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                        );
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                // 토큰 만료 시 401 반환
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{\"error\": \"Token expired\"}");
+                return;
+            }
         }
 
         filterChain.doFilter(request, response);

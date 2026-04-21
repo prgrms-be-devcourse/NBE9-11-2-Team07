@@ -7,11 +7,11 @@ spring:
 
   data:
     redis:
-      host: localhost
+      host: redis
       port: 6379
 
   datasource:
-    url: jdbc:mysql://localhost:3306/moju_db?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://db:3306/moju_db?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -43,7 +43,7 @@ spring:
 
 jwt:
   secret: thisIsATestSecretKeyForLocalDevelopment123456
-  expiration: 1800000
+  expiration: 10000
   refresh-expiration: 604800000
 
 # 모니터링 설정 (윤현정 추가)
