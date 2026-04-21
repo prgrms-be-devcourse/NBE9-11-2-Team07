@@ -34,12 +34,12 @@ public class AdminAuthService {
         }
 
         // JWT 발급
-        String token = jwtProvider.createToken(customer.getId(), customer.getRole());
+        String token = jwtProvider.createToken(customer.getId().toString(), customer.getRole());
 
         return AdminLoginResponseDto.builder()
                 .accessToken(token)
                 .adminUser(AdminLoginResponseDto.AdminUserDto.builder()
-                        .adminId(customer.getId())
+                        .adminId(customer.getId().toString())
                         .loginId(customer.getEmail())
                         .name(customer.getEmail()) // name 필드 없으면 email로 대체
                         .build())
