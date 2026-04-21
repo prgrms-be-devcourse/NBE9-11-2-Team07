@@ -54,6 +54,7 @@ class QueueServiceTest {
                 .provider("local")
                 .providerId(providerId)
                 .role("USER")
+                .name("테스트")
                 .build();
         return customerRepository.save(customer);
     }
