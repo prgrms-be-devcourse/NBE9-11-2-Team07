@@ -29,5 +29,7 @@ public class QueueDto {
     @AllArgsConstructor
     public static class StatusResponse {
         private ReservationStatus status;
+        private Long rank;                  // 현재 대기 순번 (1-based), null이면 처리 완료
+        private Long estimatedWaitMinutes;  // 예상 대기 시간 (분)
     }
 }
