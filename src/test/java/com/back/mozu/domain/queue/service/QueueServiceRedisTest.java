@@ -269,7 +269,7 @@ class QueueServiceRedisTest {
         assertThatThrownBy(() -> queueService.enqueueAttempt(
                 customer.getId(),
                 new AttemptRequest(slot.getDate(), slot.getTime(), 1)))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("이미 대기열에 있습니다.");
     }
 
@@ -284,6 +284,7 @@ class QueueServiceRedisTest {
                 .provider("test")
                 .providerId(UUID.randomUUID().toString())
                 .role("USER")
+                .name("테스트")
                 .build();
         return customerRepository.save(c);
     }
