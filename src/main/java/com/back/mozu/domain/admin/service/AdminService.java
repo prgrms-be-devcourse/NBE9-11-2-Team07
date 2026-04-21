@@ -33,8 +33,7 @@ public class AdminService {
             String status,
             Pageable pageable) {
 
-        ReservationStatus reservationStatus = status != null ? ReservationStatus.valueOf(status) : null;
-        Page<Reservation> reservations = reservationRepository.findAllWithFilters(date, time, reservationStatus, pageable);
+        Page<Reservation> reservations = reservationRepository.findAllWithFilters(date, time, status, pageable);
 
         List<AdminReservationDto> dtoList = new ArrayList<>();
         for (Reservation reservation : reservations.getContent()) {
