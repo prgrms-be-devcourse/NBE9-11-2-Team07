@@ -1,8 +1,5 @@
 package com.back.mozu.domain.queue.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.back.mozu.domain.customer.entity.Customer;
 import com.back.mozu.domain.customer.repository.CustomerRepository;
 import com.back.mozu.domain.queue.dto.QueueDto.AttemptRequest;
@@ -12,6 +9,13 @@ import com.back.mozu.domain.reservation.entity.ReservationStatus;
 import com.back.mozu.domain.reservation.entity.TimeSlot;
 import com.back.mozu.domain.reservation.repository.ReservationRepository;
 import com.back.mozu.domain.reservation.repository.TimeSlotRepository;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -20,11 +24,9 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 class QueueServiceTest {
@@ -41,11 +43,17 @@ class QueueServiceTest {
     @Autowired
     private CustomerRepository customerRepository;
 
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
     @AfterEach
     void cleanUp() {
         reservationRepository.deleteAllInBatch();
         timeSlotRepository.deleteAllInBatch();
         customerRepository.deleteAllInBatch();
+        redisTemplate.delete(redisTemplate.keys("queue:*"));
+        redisTemplate.delete(redisTemplate.keys("waiting:*"));
+        redisTemplate.delete(redisTemplate.keys("lock:*"));
     }
 
     private Customer createAndSaveCustomer(String email, String providerId) {
@@ -190,7 +198,10 @@ class QueueServiceTest {
         timeSlotRepository.save(timeSlot);
 
         AttemptRequest request = new AttemptRequest(timeSlot.getDate(), timeSlot.getTime(), 2);
-        queueService.enqueueAttempt(customerId, request); //
+        queueService.enqueueAttempt(customerId, request);
+
+        // Redis 클리어 → DB 2차 방어만 테스트
+        redisTemplate.delete(redisTemplate.keys("queue:*"));
 
         assertThatThrownBy(() -> queueService.enqueueAttempt(customerId, request))
                 .isInstanceOf(IllegalArgumentException.class)
