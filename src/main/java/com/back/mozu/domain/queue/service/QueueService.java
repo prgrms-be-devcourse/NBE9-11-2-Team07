@@ -69,7 +69,7 @@ public class QueueService {
             Long existingRank = redisUtil.zRank(
                     RedisUtil.queueKey(timeSlot.getId().toString()), userId.toString());
             if (existingRank != null) {
-                throw new IllegalStateException("이미 대기열에 있습니다.");
+                throw new IllegalArgumentException("이미 대기열에 있습니다.");
             }
         } catch (DataAccessException e) {  // DataAccessException: Redis 연결 실패 포함한 데이터 접근 예외의 상위 클래스
             // Redis 장애 시 DB 체크로 fallback
