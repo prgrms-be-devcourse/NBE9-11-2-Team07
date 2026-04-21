@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.back.mozu.domain.customer.entity.Customer;
 import com.back.mozu.domain.customer.service.CustomerService;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
@@ -54,23 +52,21 @@ public class ReservationService {
             throw new ServiceException("해당 예약을 수정할 권한이 없습니다.");
         }
 
-        // 새로운 타임슬롯 조회
-        // TO DO: 해당 DB에서 락 걸어줬는지 확인 필요
-        TimeSlot newTimeSlot = (TimeSlot) timeSlotRepository.findByDateAndTime(request.date(), request.time())
+        TimeSlot lockedNewTimeSlot = timeSlotRepository.findByDateAndTime(request.date(), request.time())
+                .map(t -> timeSlotRepository.findByIdWithLock(t.getId()).orElseThrow())
                 .orElseThrow(() -> new ServiceException("해당 시간대는 존재하지 않습니다."));
 
-        // 새 타임슬롯 재고 확인 및 차감 (Occupy)
-        // 새 예약 인원만큼 자리가 있는지 확인하고 차감
-        // TO DO: guestCount가 재고보다 작은지 확인하는 로직 필요
-        newTimeSlot.occupy(request.guestCount());
+        lockedNewTimeSlot.occupy(request.guestCount());
 
         // 기존 타임슬롯 재고 복구 (Release)
         // 수정 전 예약되어 있던 인원만큼 현재 타임슬롯의 재고를 다시 늘려줌
         // occupy로 예약 선점 완료 한 뒤에 release
-        reservation.getTimeSlot().release(reservation.getGuestCount());
+        TimeSlot lockedOldTimeSlot = timeSlotRepository.findByIdWithLock(
+                reservation.getTimeSlot().getId()
+        ).orElseThrow();
+        lockedOldTimeSlot.release(reservation.getGuestCount());
 
-        // 수정 데이터들 Reservation 엔티티에 있는 수정 메서드에 넣어주기
-        reservation.modifyReservation(newTimeSlot, request.guestCount());
+        reservation.modifyReservation(lockedNewTimeSlot, request.guestCount());
 
         // 업데이트 된 예약 사항 DTO로 반환
         return ReservationDto.Response.from(reservation);
@@ -139,7 +135,10 @@ public class ReservationService {
             releaseScheduler.schedule(reservation);
         } else {
             // 즉시 반환: 재고 즉시 복구 후 예약 취소 처리
-            reservation.getTimeSlot().release(reservation.getGuestCount());
+            TimeSlot lockedTimeSlot = timeSlotRepository.findByIdWithLock(
+                    reservation.getTimeSlot().getId()
+            ).orElseThrow();
+            lockedTimeSlot.release(reservation.getGuestCount());
             reservation.cancelReservation(cancelReason);
         }
 
