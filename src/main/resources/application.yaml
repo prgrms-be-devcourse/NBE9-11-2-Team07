@@ -44,3 +44,15 @@ spring:
 jwt:
   secret: thisIsATestSecretKeyForLocalDevelopment123456
   expiration: 86400000
+
+# 모니터링 설정 (윤현정 추가)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "prometheus,info,health,metrics"
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
