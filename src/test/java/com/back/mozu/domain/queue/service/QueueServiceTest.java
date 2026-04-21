@@ -83,7 +83,7 @@ class QueueServiceTest {
 
             executorService.execute(() -> {
                 try {
-                    UUID customerId = UUID.fromString(String.valueOf(currentCustomer.getId()));
+                    UUID customerId = currentCustomer.getId();
                     queueService.enqueueAttempt(customerId, new AttemptRequest(timeSlot.getDate(), timeSlot.getTime(), 1));
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -104,7 +104,7 @@ class QueueServiceTest {
     @DisplayName("존재하지 않는 타임슬롯으로 예약 시도 시 IllegalArgumentException 발생")
     void throwExceptionWhenTimeSlotNotFound() {
         Customer customer = createAndSaveCustomer("notfound@test.com", "notfound123");
-        UUID customerId = UUID.fromString(String.valueOf(customer.getId()));
+        UUID customerId = customer.getId();
 
         AttemptRequest request = new AttemptRequest(LocalDate.of(2099, 1, 1), LocalTime.of(12, 0), 2);
 
@@ -127,7 +127,7 @@ class QueueServiceTest {
     @DisplayName("남은 재고와 예약 인원 동일 시 성공 및 재고 값 0을 반환")
     void successWhenExactStock() throws InterruptedException {
         Customer customer = createAndSaveCustomer("exact@test.com", "exact123");
-        UUID customerId = UUID.fromString(String.valueOf(customer.getId()));
+        UUID customerId = customer.getId();
 
         TimeSlot timeSlot = TimeSlot.builder()
                 .date(LocalDate.now()).time(LocalTime.of(12, 0)).stock(5).build();
@@ -148,7 +148,7 @@ class QueueServiceTest {
     @DisplayName("남은 재고보다 예약 인원이 많을 시 실패 및 CANCELED 상태 반환")
     void failWhenRequestExceedsStock() throws InterruptedException {
         Customer customer = createAndSaveCustomer("exceed@test.com", "exceed123");
-        UUID customerId = UUID.fromString(String.valueOf(customer.getId()));
+        UUID customerId = customer.getId();
 
         TimeSlot timeSlot = TimeSlot.builder()
                 .date(LocalDate.now()).time(LocalTime.of(12, 0)).stock(5).build();
@@ -166,7 +166,7 @@ class QueueServiceTest {
     @DisplayName("예약 인원이 1명 미만일 시 IllegalArgumentException 발생")
     void throwExceptionWhenInvalidGuestCount() {
         Customer customer = createAndSaveCustomer("invalid@test.com", "invalid123");
-        UUID customerId = UUID.fromString(String.valueOf(customer.getId()));
+        UUID customerId = customer.getId();
 
         TimeSlot timeSlot = TimeSlot.builder()
                 .date(LocalDate.now()).time(LocalTime.of(12, 0)).stock(5).build();
@@ -183,7 +183,7 @@ class QueueServiceTest {
     @DisplayName("동일한 인원이 같은 시간대에 중복 예약 시도 시 예외 발생")
     void throwExceptionWhenDuplicateRequest() {
         Customer customer = createAndSaveCustomer("dup@test.com", "dup123");
-        UUID customerId = UUID.fromString(String.valueOf(customer.getId()));
+        UUID customerId = customer.getId();
 
         TimeSlot timeSlot = TimeSlot.builder()
                 .date(LocalDate.now()).time(LocalTime.of(12, 0)).stock(5).build();
