@@ -19,7 +19,7 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
 
         return new CustomerDto.MeResponse(
-                customer.getId(),
+                customer.getId().toString(),
                 customer.getEmail(),
                 customer.getEmail(),
                 customer.getRole()

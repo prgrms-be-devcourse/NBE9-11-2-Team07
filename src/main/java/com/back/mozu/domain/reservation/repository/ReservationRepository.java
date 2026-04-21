@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -19,4 +20,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
     List<Reservation> findAllByUserId(UUID customerId);
     int countByTimeSlot_Date(LocalDate date);
     Page<Reservation> findAllWithFilters(LocalDate date, LocalTime time, String status, Pageable pageable);
+
+    // 추가
+    int countByUserIdAndStatusAndCancelledAtAfter(UUID userId, ReservationStatus status, LocalDateTime dateTime);
+    List<Reservation> findAllByStatusAndReleaseAtBefore(ReservationStatus status, LocalDateTime dateTime);
+    List<Reservation> findAllByStatus(ReservationStatus status);
 }

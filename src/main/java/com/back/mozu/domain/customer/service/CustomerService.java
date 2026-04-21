@@ -22,7 +22,7 @@ public class CustomerService {
 
     // ID로 찾기
     public Optional<Customer> findById(UUID id) {
-        return customerRepository.findById(String.valueOf(id));
+        return customerRepository.findById(id);
     }
 
     // 존재 여부 확인 (나중에 회원가입 로직 등에서 활용)

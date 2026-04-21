@@ -2,6 +2,7 @@ package com.back.mozu.domain.reservation.service;
 
 import com.back.mozu.domain.reservation.dto.ReservationDto;
 import com.back.mozu.domain.reservation.entity.Reservation;
+import com.back.mozu.domain.reservation.entity.ReservationStatus;
 import com.back.mozu.domain.reservation.entity.TimeSlot;
 import com.back.mozu.domain.reservation.repository.ReservationRepository;
 import com.back.mozu.domain.reservation.repository.TimeSlotRepository;
@@ -9,8 +10,13 @@ import lombok.RequiredArgsConstructor;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.back.mozu.domain.customer.entity.Customer;
+import com.back.mozu.domain.customer.service.CustomerService;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -20,6 +26,8 @@ public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final TimeSlotRepository timeSlotRepository;
+    private final ReleaseScheduler releaseScheduler;
+    private final CustomerService customerService;
 
     // 내 예약 정보 받아오기 - GET "/api/v1/my/reservations"
     public List<ReservationDto.Response> getMyReservation(UUID customerId) {
@@ -34,7 +42,8 @@ public class ReservationService {
     }
 
     // 내 예약 정보 수정하기 - PATCH "/api/v1/my/reservations/{reservationId}"
-    public ReservationDto.Response modifyMyReservation(UUID customerId, UUID reservationId, ReservationDto.Request request) {
+    @Transactional
+    public ReservationDto.Response modifyMyReservation(UUID reservationId, UUID customerId, ReservationDto.Request request) {
 
         // 해당 예약 찾아오기
         Reservation reservation = reservationRepository.findById(reservationId)
@@ -67,9 +76,9 @@ public class ReservationService {
         return ReservationDto.Response.from(reservation);
     }
 
-
     // 내 예약 취소하기 - POST "/api/v1/my/reservations/{reservationId}/cancel"
-    public ReservationDto.Response cancelMyReservation(UUID customerId, UUID reservationId) {
+    @Transactional
+    public ReservationDto.Response cancelMyReservation(UUID customerId, UUID reservationId, String cancelReason) {
 
         // 해당 예약 찾아오기
         Reservation reservation = reservationRepository.findById(reservationId)
@@ -80,11 +89,59 @@ public class ReservationService {
             throw new ServiceException("해당 예약을 취소할 권한이 없습니다.");
         }
 
-        // 예약을 취소했으니 그만큼 좌석을 다시 늘려줘야 함
-        reservation.getTimeSlot().release(reservation.getGuestCount());
+        // 이미 취소된 예약인지 체크
+        if (reservation.getStatus() == ReservationStatus.CANCELED) {
+            throw new IllegalArgumentException("이미 취소된 예약입니다.");
+        }
 
-        // 예약 상태 변경 (Status를 CANCELLED로)
-        reservation.cancelReservation();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime reservationDateTime = LocalDateTime.of(
+                reservation.getTimeSlot().getDate(),
+                reservation.getTimeSlot().getTime()
+        );
+
+        boolean isWithin24Hours = reservationDateTime.isBefore(now.plusHours(24));
+
+        if (isWithin24Hours) {
+            Customer customer = customerService.findById(customerId)
+                    .orElseThrow(() -> new ServiceException("사용자를 찾을 수 없습니다."));
+            customer.applyPenaltyUntil(now.plusMonths(3));
+            cancelReason = "LATE_CANCEL";
+        }
+
+        boolean isRandomRelease = false;
+
+        // [케이스 1] 오픈 직후 취소: 예약 오픈 후 30분 이내 취소 → 암표 의심 → 랜덤 반환 적용
+        if (reservation.getReservationOpenedAt() != null) {
+            if (LocalDateTime.now().isBefore(reservation.getReservationOpenedAt().plusMinutes(30))) {
+                isRandomRelease = true;
+            }
+        }
+
+        // [케이스 2] 반복 취소 유저: 같은 유저가 3개월 내 3번 이상 취소 → 어뷰징 의심 → 랜덤 반환 적용
+        int cancelCount = reservationRepository
+                .countByUserIdAndStatusAndCancelledAtAfter(
+                        customerId,
+                        ReservationStatus.CANCELED,
+                        LocalDateTime.now().minusMonths(3)
+                );
+
+        if (cancelCount >= 3) {
+            isRandomRelease = true;
+        }
+
+        if (isRandomRelease) {
+            // 랜덤 반환: 10~60분 사이 랜덤 시간 후 재고 반환
+            int randomMinutes = 10 + new Random().nextInt(51);
+            LocalDateTime releaseAt = LocalDateTime.now().plusMinutes(randomMinutes);
+            reservation.pendingCancel(cancelReason, releaseAt);
+            // 스케줄러에 반환 예약 등록
+            releaseScheduler.schedule(reservation);
+        } else {
+            // 즉시 반환: 재고 즉시 복구 후 예약 취소 처리
+            reservation.getTimeSlot().release(reservation.getGuestCount());
+            reservation.cancelReservation(cancelReason);
+        }
 
         return ReservationDto.Response.from(reservation);
     }
