@@ -25,6 +25,10 @@ public class ReservationDto {
             @Max(value = 8, message = "최대 8명까지 예약 가능합니다.")
             int guestCount
     ) {}
+    public record CancelRequest(
+            String cancelReason
+    ){}
+
 
     // 예약 결과 응답 및 상세 조회용
     public record Response(

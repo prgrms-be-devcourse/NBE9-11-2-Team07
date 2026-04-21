@@ -57,7 +57,7 @@ public class AdminService {
             throw new IllegalStateException("이미 취소된 예약입니다.");
         }
 
-        reservation.cancelReservation();
+        reservation.cancelReservation("ADMIN_CANCEL");
 
         return new AdminDto.CancelReservationResponse(
                 reservation.getId(),
