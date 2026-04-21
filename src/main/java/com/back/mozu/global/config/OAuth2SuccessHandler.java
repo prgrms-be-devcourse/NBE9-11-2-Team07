@@ -27,7 +27,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
 
-        String userId = oAuth2User.getAttribute("userId");
+        String userId = oAuth2User.getAttribute("userId").toString();
         String role = oAuth2User.getAttribute("role");
         Boolean isNewUser = oAuth2User.getAttribute("isNewUser");
 
