@@ -32,7 +32,7 @@ public class ApiV1ReservationController {
         }
 
         // 내 예약 목록 가져오기
-        List<ReservationDto.Response> myReservations = reservationService.getMyReservation(UUID.fromString(actor.getId()));
+        List<ReservationDto.Response> myReservations = reservationService.getMyReservation(actor.getId());
 
         // 유저들의 모든 예약을 리스트 형태로 RsData 담아서 전달
         return new RsData<>(
@@ -57,7 +57,7 @@ public class ApiV1ReservationController {
 
         // 수정 서비스 로직 실행 후 결과물 받아오기
         ReservationDto.Response modifiedReservation =
-                reservationService.modifyMyReservation(reservationId, UUID.fromString(actor.getId()), request);
+                reservationService.modifyMyReservation(reservationId, actor.getId(), request);
 
         // RsData 담아서 전달
         return new RsData<>(
@@ -68,7 +68,7 @@ public class ApiV1ReservationController {
     }
 
     @PostMapping("/{reservationId}/cancel")
-    public RsData<ReservationDto.Response> cancelMyReservation(@PathVariable UUID reservationId) {
+    public RsData<ReservationDto.Response> cancelMyReservation(@PathVariable UUID reservationId,@RequestBody ReservationDto.CancelRequest request) {
 
         // Rq를 통해 현재 유저 확보
         Customer actor = rq.getActor();
@@ -80,7 +80,7 @@ public class ApiV1ReservationController {
 
         // 취소 서비스 로직 실행
         ReservationDto.Response cancelledReservation =
-                reservationService.cancelMyReservation(UUID.fromString(actor.getId()), reservationId);
+                reservationService.cancelMyReservation(actor.getId(), reservationId, request.cancelReason());
 
         // RsData 담아서 전달
         return new RsData<>(
@@ -89,4 +89,22 @@ public class ApiV1ReservationController {
                 cancelledReservation
         );
     }
+
+//    @PostMapping("/{reservationId}/cancel")
+//    public RsData<ReservationDto.Response> cancelMyReservation(
+//            @PathVariable UUID reservationId,
+//            @RequestBody ReservationDto.CancelRequest request) {
+//
+//        // 임시 테스트용 유저 ID 하드코딩
+//        UUID customerId = UUID.fromString("e0b3c728-3b25-11f1-898e-0242ac110002");
+//
+//        ReservationDto.Response cancelledReservation =
+//                reservationService.cancelMyReservation(customerId, reservationId, request.cancelReason());
+//
+//        return new RsData<>(
+//                "예약 취소에 성공했습니다.",
+//                "200",
+//                cancelledReservation
+//        );
+//    }
 }

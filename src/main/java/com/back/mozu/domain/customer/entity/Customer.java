@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -16,8 +17,8 @@ public class Customer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "VARCHAR(36)")
-    private String id;
+    @Column(columnDefinition = "BINARY(16)")
+    private UUID id;
 
     @Column(nullable = false, unique = true, length = 100)
     private String email;
@@ -37,6 +38,9 @@ public class Customer {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "penalty_until")
+    private LocalDateTime penaltyUntil; //유저가 언제까지 예약이 막혀 있는지 저장하는 필드
+
     @Builder
     public Customer(String email, String provider, String providerId, String role, String password) {
         this.email = email;
@@ -46,5 +50,13 @@ public class Customer {
         this.password = password;
         this.createdAt = LocalDateTime.now();
     }
+
+    public void applyPenaltyUntil(LocalDateTime penaltyUntil) {
+        this.penaltyUntil = penaltyUntil;
+    } // 당일 취소 시 3개월 뒤까지 예약 불가를 반영
+
+    public boolean isPenaltyActive(LocalDateTime now) {
+        return penaltyUntil != null && penaltyUntil.isAfter(now);
+    } // 예약 시도할 때 지금 패널티가 살아 있는지 확인
 }
 
