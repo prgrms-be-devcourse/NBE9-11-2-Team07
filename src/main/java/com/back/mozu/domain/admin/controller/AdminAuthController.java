@@ -59,35 +59,4 @@ public class AdminAuthController {
 
         return ResponseEntity.ok(new RsData<>("로그아웃 되었습니다.", "200", null));
     }
-    @PostMapping("/refresh")
-    public ResponseEntity<RsData<String>> refresh(
-            @CookieValue(value = "refreshToken", required = false) String refreshToken) {
-
-        if (refreshToken == null) {
-            return ResponseEntity.status(401)
-                    .body(new RsData<>("refreshToken이 없습니다.", "401", null));
-        }
-
-        // 토큰 유효성 검증
-        if (!jwtProvider.validateRefreshToken(refreshToken)) {
-            return ResponseEntity.status(401)
-                    .body(new RsData<>("유효하지 않은 refreshToken입니다.", "401", null));
-        }
-
-        // userId 꺼내기
-        String userId = jwtProvider.getUserId(refreshToken);
-
-        // Redis에서 저장된 토큰과 비교
-        String savedToken = redisUtil.get("refresh:" + userId);
-        if (!refreshToken.equals(savedToken)) {
-            return ResponseEntity.status(401)
-                    .body(new RsData<>("만료된 refreshToken입니다.", "401", null));
-        }
-
-        // 새 Access Token 발급
-        String role = jwtProvider.getRole(refreshToken);
-        String newAccessToken = jwtProvider.createToken(userId, role);
-
-        return ResponseEntity.ok(new RsData<>("토큰이 재발급되었습니다.", "200", newAccessToken));
-    }
 }
