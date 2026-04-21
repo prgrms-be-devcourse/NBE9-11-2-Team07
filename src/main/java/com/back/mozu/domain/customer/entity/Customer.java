@@ -41,13 +41,9 @@ public class Customer {
     @Column(name = "penalty_until")
     private LocalDateTime penaltyUntil; //유저가 언제까지 예약이 막혀 있는지 저장하는 필드
 
-    @Column(nullable = false, length = 50)
-    private String name;
-
     @Builder
-    public Customer(String email, String provider, String providerId, String role, String password, String name) {
+    public Customer(String email, String provider, String providerId, String role, String password) {
         this.email = email;
-        this.name = name;
         this.provider = provider;
         this.providerId = providerId;
         this.role = role;
@@ -62,9 +58,5 @@ public class Customer {
     public boolean isPenaltyActive(LocalDateTime now) {
         return penaltyUntil != null && penaltyUntil.isAfter(now);
     } // 예약 시도할 때 지금 패널티가 살아 있는지 확인
-
-    public void updateFromOAuth(String name, String email) {
-        this.name = name;
-        this.email = email;
-    }
 }
+

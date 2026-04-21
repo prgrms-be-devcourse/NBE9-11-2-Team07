@@ -89,4 +89,22 @@ public class ApiV1ReservationController {
                 cancelledReservation
         );
     }
+
+//    @PostMapping("/{reservationId}/cancel")
+//    public RsData<ReservationDto.Response> cancelMyReservation(
+//            @PathVariable UUID reservationId,
+//            @RequestBody ReservationDto.CancelRequest request) {
+//
+//        // 임시 테스트용 유저 ID 하드코딩
+//        UUID customerId = UUID.fromString("e0b3c728-3b25-11f1-898e-0242ac110002");
+//
+//        ReservationDto.Response cancelledReservation =
+//                reservationService.cancelMyReservation(customerId, reservationId, request.cancelReason());
+//
+//        return new RsData<>(
+//                "예약 취소에 성공했습니다.",
+//                "200",
+//                cancelledReservation
+//        );
+//    }
 }

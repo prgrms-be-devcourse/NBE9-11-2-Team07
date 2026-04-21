@@ -28,7 +28,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         Map<String, Object> attributes = oAuth2User.getAttributes();
         String providerId = (String) attributes.get("sub");
         String email = (String) attributes.get("email");
-        String name = (String) attributes.get("name");
 
         Optional<Customer> existingCustomer = customerRepository.findByProviderId(providerId);
 
@@ -42,14 +41,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                             .provider("google")
                             .providerId(providerId)
                             .role("USER")
-                            .name(name)
                             .build()
             );
             isNewUser = true;
         } else {
             customer = existingCustomer.get();
-            customer.updateFromOAuth(name, email);
-            customerRepository.save(customer);
             isNewUser = false;
         }
 

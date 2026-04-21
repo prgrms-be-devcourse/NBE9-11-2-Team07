@@ -10,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.back.mozu.domain.customer.entity.Customer;
-import com.back.mozu.domain.customer.service.CustomerService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,7 +25,6 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final TimeSlotRepository timeSlotRepository;
     private final ReleaseScheduler releaseScheduler;
-    private final CustomerService customerService;
 
     // 내 예약 정보 받아오기 - GET "/api/v1/my/reservations"
     public List<ReservationDto.Response> getMyReservation(UUID customerId) {
@@ -92,21 +89,6 @@ public class ReservationService {
         // 이미 취소된 예약인지 체크
         if (reservation.getStatus() == ReservationStatus.CANCELED) {
             throw new IllegalArgumentException("이미 취소된 예약입니다.");
-        }
-
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime reservationDateTime = LocalDateTime.of(
-                reservation.getTimeSlot().getDate(),
-                reservation.getTimeSlot().getTime()
-        );
-
-        boolean isWithin24Hours = reservationDateTime.isBefore(now.plusHours(24));
-
-        if (isWithin24Hours) {
-            Customer customer = customerService.findById(customerId)
-                    .orElseThrow(() -> new ServiceException("사용자를 찾을 수 없습니다."));
-            customer.applyPenaltyUntil(now.plusMonths(3));
-            cancelReason = "LATE_CANCEL";
         }
 
         boolean isRandomRelease = false;
