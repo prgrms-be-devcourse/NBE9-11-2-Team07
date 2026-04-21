@@ -85,6 +85,7 @@ class QueueServiceTest {
                     UUID customerId = UUID.fromString(String.valueOf(currentCustomer.getId()));
                     queueService.enqueueAttempt(customerId, new AttemptRequest(timeSlot.getDate(), timeSlot.getTime(), 1));
                 } catch (Exception e) {
+                    throw new RuntimeException(e);
                 } finally {
                     latch.countDown();
                 }
