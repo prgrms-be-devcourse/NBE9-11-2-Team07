@@ -2,7 +2,9 @@ package com.back.mozu.domain.reservation.service;
 
 import com.back.mozu.domain.reservation.entity.Reservation;
 import com.back.mozu.domain.reservation.entity.ReservationStatus;
+import com.back.mozu.domain.reservation.entity.TimeSlot;
 import com.back.mozu.domain.reservation.repository.ReservationRepository;
+import com.back.mozu.domain.reservation.repository.TimeSlotRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,6 +20,7 @@ import java.util.List;
 public class StaticReleaseScheduler implements ReleaseScheduler {
 
     private final ReservationRepository reservationRepository;
+    private final TimeSlotRepository timeSlotRepository;
 
     @Override
     public void schedule(Reservation reservation) {
@@ -37,7 +40,10 @@ public class StaticReleaseScheduler implements ReleaseScheduler {
 
         // 재고 반환 후 CANCELED로 변경
         for (Reservation reservation : pendingList) {
-            reservation.getTimeSlot().release(reservation.getGuestCount());
+            TimeSlot lockedTimeSlot = timeSlotRepository.findByIdWithLock(
+                    reservation.getTimeSlot().getId()
+            ).orElseThrow();
+            lockedTimeSlot.release(reservation.getGuestCount());
             reservation.cancelReservation(reservation.getCancelReason());
         }
     }

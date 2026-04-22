@@ -254,4 +254,42 @@ class ReservationServiceTest {
 
         return reservationRepository.save(reservation);
     }
+    @Test
+    @DisplayName("동시에 같은 예약 취소 시도 시 하나만 성공한다")
+    void cancel_concurrent_same_reservation_only_one_succeeds() throws InterruptedException {
+        UUID userId1 = UUID.randomUUID();
+        UUID userId2 = UUID.randomUUID();
+
+        TimeSlot timeSlot = createTimeSlot(3, LocalDate.now().plusMonths(1), LocalTime.of(12, 0));
+
+        // 같은 타임슬롯에 두 예약
+        Reservation reservation1 = createReservation(userId1, timeSlot, 2, ReservationStatus.CONFIRMED, null, null, null, null);
+        Reservation reservation2 = createReservation(userId2, timeSlot, 2, ReservationStatus.CONFIRMED, null, null, null, null);
+
+        // 동시에 취소 시도
+        Thread thread1 = new Thread(() -> {
+            try {
+                reservationService.cancelMyReservation(userId1, reservation1.getId(), "동시 취소1");
+            } catch (Exception e) {
+                System.out.println("thread1 실패: " + e.getMessage());
+            }
+        });
+
+        Thread thread2 = new Thread(() -> {
+            try {
+                reservationService.cancelMyReservation(userId2, reservation2.getId(), "동시 취소2");
+            } catch (Exception e) {
+                System.out.println("thread2 실패: " + e.getMessage());
+            }
+        });
+
+        thread1.start();
+        thread2.start();
+        thread1.join();
+        thread2.join();
+
+        TimeSlot updatedSlot = timeSlotRepository.findById(timeSlot.getId()).orElseThrow();
+        // 재고가 음수가 되면 안됨
+        assertThat(updatedSlot.getStock()).isGreaterThanOrEqualTo(0);
+    }
 }
