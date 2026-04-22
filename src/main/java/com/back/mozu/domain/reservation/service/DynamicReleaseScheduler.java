@@ -2,7 +2,9 @@ package com.back.mozu.domain.reservation.service;
 
 import com.back.mozu.domain.reservation.entity.Reservation;
 import com.back.mozu.domain.reservation.entity.ReservationStatus;
+import com.back.mozu.domain.reservation.entity.TimeSlot;
 import com.back.mozu.domain.reservation.repository.ReservationRepository;
+import com.back.mozu.domain.reservation.repository.TimeSlotRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -20,6 +22,7 @@ public class DynamicReleaseScheduler implements ReleaseScheduler, ApplicationRun
 
     private final TaskScheduler taskScheduler;
     private final ReservationRepository reservationRepository;
+    private final TimeSlotRepository timeSlotRepository;
 
     // 서버 시작할 때 자동 실행
     // 왜? 서버 재시작하면 메모리 Task 사라지니까
@@ -50,7 +53,10 @@ public class DynamicReleaseScheduler implements ReleaseScheduler, ApplicationRun
     public void releaseStock(UUID reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow();
-        reservation.getTimeSlot().release(reservation.getGuestCount());
+        TimeSlot lockedTimeSlot = timeSlotRepository.findByIdWithLock(
+                reservation.getTimeSlot().getId()
+        ).orElseThrow();
+        lockedTimeSlot.release(reservation.getGuestCount());
         reservation.cancelReservation(reservation.getCancelReason());
     }
 }

@@ -10,6 +10,7 @@ import java.util.UUID;
 @Builder
 public class AdminLoginResponseDto {
     private String accessToken;
+    private String refrestToken;
     private AdminUserDto adminUser;
 
     @Getter
