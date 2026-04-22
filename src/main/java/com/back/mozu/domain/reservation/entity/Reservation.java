@@ -43,7 +43,7 @@ public class Reservation {
     private LocalDateTime reservationOpenedAt;
 
     @Builder.Default
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, columnDefinition = "DATETIME(3)")
     private LocalDateTime createdAt = LocalDateTime.now();
     
 
