@@ -1,7 +1,6 @@
 package com.back.mozu.global.exception;
 
 import com.back.mozu.global.response.RsData;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -66,13 +65,6 @@ public class GlobalExceptionHandler {
                 "잘못된 파라미터 요청입니다.",
                 "400-4"
         );
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseBody
-    public ResponseEntity<RsData<Void>> handleException(IllegalArgumentException e) {
-        RsData<Void> rsData = new RsData<>(e.getMessage(), "409");
-        return ResponseEntity.status(409).body(rsData);
     }
 
 }
