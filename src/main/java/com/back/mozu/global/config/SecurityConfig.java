@@ -39,6 +39,23 @@ public class SecurityConfig {
         return source;
     }
 
+    // 0순위: 모니터링용 체인 (프로메테우스 접근 허용)
+    @Bean
+    @Order(0)
+    public SecurityFilterChain monitoringFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/actuator/**") // 이 경로로 들어오면 이 체인이 담당함
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll() // 무조건 통과
+                )
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .requestCache(cache -> cache.disable())
+                .securityContext(context -> context.disable());
+        return http.build();
+    }
+
     // 관리자용 체인
     @Bean
     @Order(1)
