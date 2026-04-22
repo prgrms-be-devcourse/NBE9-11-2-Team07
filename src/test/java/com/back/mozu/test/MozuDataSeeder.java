@@ -64,6 +64,7 @@ public class MozuDataSeeder implements CommandLineRunner {
                     .provider("google")
                     .providerId("google_" + i)
                     .role("USER")
+                    .name("테스트")
                     .password(null) // 소셜 로그인 가정
                     .build());
 
