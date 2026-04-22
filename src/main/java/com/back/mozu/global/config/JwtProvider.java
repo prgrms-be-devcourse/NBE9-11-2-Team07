@@ -18,6 +18,9 @@ public class JwtProvider {
     @Value("${jwt.expiration}")
     private long expiration;
 
+    @Value("${jwt.refresh-expiration}")
+    private long refreshExpiration;
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
@@ -62,4 +65,20 @@ public class JwtProvider {
     public String getRole(String token) {
         return getClaims(token).get("role", String.class);
     }
+
+    public String createRefreshToken(String userId, String role) {
+        return Jwts.builder()
+                .claim("userId", userId)
+                .claim("role", role)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + refreshExpiration))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    public boolean validateRefreshToken(String token) {
+        return validateToken(token);
+    }
+
+
 }

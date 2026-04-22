@@ -4,7 +4,7 @@ services:
     image: mysql:8.0
     container_name: moju-mysql
     ports:
-      - "3306:3306"
+      - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: moju_db
@@ -28,6 +28,8 @@ services:
     container_name: moju-app
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/moju_db?useSSL=false&allowPublicKeyRetrieval=true
       - SPRING_REDIS_HOST=redis
