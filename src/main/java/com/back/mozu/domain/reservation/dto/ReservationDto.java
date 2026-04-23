@@ -37,7 +37,8 @@ public class ReservationDto {
             int guestCount,
             LocalDate date,
             LocalTime time,
-            LocalDateTime createdAt
+            LocalDateTime createdAt,
+            String cancelReason
     ) {
         // 엔티티를 DTO로 변환하는 정적 팩토리 메서드
         public static Response from(Reservation reservation) {
@@ -47,7 +48,8 @@ public class ReservationDto {
                     reservation.getGuestCount(),
                     reservation.getTimeSlot().getDate(),
                     reservation.getTimeSlot().getTime(),
-                    reservation.getCreatedAt()
+                    reservation.getCreatedAt(),
+                    reservation.getCancelReason()
             );
         }
     }
