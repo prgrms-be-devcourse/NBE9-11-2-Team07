@@ -6,7 +6,6 @@ import com.back.mozu.domain.reservation.entity.TimeSlot;
 import com.back.mozu.domain.reservation.repository.ReservationRepository;
 import com.back.mozu.domain.reservation.repository.TimeSlotRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +44,24 @@ public class StaticReleaseScheduler implements ReleaseScheduler {
             ).orElseThrow();
             lockedTimeSlot.release(reservation.getGuestCount());
             reservation.cancelReservation(reservation.getCancelReason());
+        }
+    }
+
+    // 15초마다 좀비 PENDING 처리
+    @Scheduled(fixedRate = 15000)
+    @Transactional
+    public void processZombiePending() {
+        LocalDateTime threshold = LocalDateTime.now().minusSeconds(15);
+
+        List<Reservation> zombies = reservationRepository
+                .findAllByStatusAndCreatedAtBefore(
+                        ReservationStatus.PENDING,
+                        threshold
+                );
+
+        // 재고 점유 전 실패한 건이므로 상태만 변경 (재고 복구 X)
+        for (Reservation reservation : zombies) {
+            reservation.cancelReservation("TIMEOUT");
         }
     }
 }
