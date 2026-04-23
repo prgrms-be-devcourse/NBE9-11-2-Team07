@@ -1,5 +1,8 @@
 package com.back.mozu.domain.queue.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.back.mozu.domain.customer.entity.Customer;
 import com.back.mozu.domain.customer.repository.CustomerRepository;
 import com.back.mozu.domain.queue.dto.QueueDto.AttemptRequest;
@@ -9,13 +12,6 @@ import com.back.mozu.domain.reservation.entity.ReservationStatus;
 import com.back.mozu.domain.reservation.entity.TimeSlot;
 import com.back.mozu.domain.reservation.repository.ReservationRepository;
 import com.back.mozu.domain.reservation.repository.TimeSlotRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.redis.core.RedisTemplate;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -24,11 +20,21 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+@SpringBootTest(properties = {
+        "spring.datasource.url=jdbc:mysql://localhost:3306/moju_db?createDatabaseIfNotExist=true&serverTimezone=Asia/Seoul",
+        "spring.datasource.username=root",
+        "spring.datasource.password=root",
+        "spring.data.redis.host=localhost",
+        "spring.data.redis.port=6379"
+})
 
-@SpringBootTest
 class QueueServiceTest {
 
     @Autowired
