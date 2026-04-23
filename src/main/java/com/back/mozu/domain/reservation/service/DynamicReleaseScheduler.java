@@ -8,6 +8,7 @@ import com.back.mozu.domain.reservation.repository.TimeSlotRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
+@Primary
 @Component
 @RequiredArgsConstructor
 public class DynamicReleaseScheduler implements ReleaseScheduler, ApplicationRunner {
