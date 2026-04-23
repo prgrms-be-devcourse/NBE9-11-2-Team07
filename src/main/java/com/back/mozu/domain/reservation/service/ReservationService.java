@@ -3,17 +3,18 @@ package com.back.mozu.domain.reservation.service;
 import com.back.mozu.domain.queue.service.LockService;
 import com.back.mozu.domain.reservation.dto.ReservationDto;
 import com.back.mozu.domain.reservation.entity.Reservation;
+import com.back.mozu.domain.reservation.entity.ReservationStatus;
 import com.back.mozu.domain.reservation.entity.TimeSlot;
 import com.back.mozu.domain.reservation.repository.ReservationRepository;
 import com.back.mozu.domain.reservation.repository.TimeSlotRepository;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -84,14 +85,42 @@ public class ReservationService {
             throw new RuntimeException("취소 권한이 없습니다.");
         }
 
-        TimeSlot ts = timeSlotRepository.findByIdWithLock(reservation.getTimeSlot().getId())
-                .orElseThrow(() -> new RuntimeException("타임슬롯 조회 실패"));
+        if (reservation.getStatus() == ReservationStatus.CANCELED ||
+                reservation.getStatus() == ReservationStatus.CANCEL_PENDING) {
+            throw new RuntimeException("이미 취소 처리된 예약입니다.");
+        }
 
-        ts.release(reservation.getGuestCount());
-        redisTemplate.opsForValue().increment("stock:timeslot:" + ts.getId(), reservation.getGuestCount());
+        LocalDateTime now = LocalDateTime.now();
+        boolean isPenalty = false;
 
-        reservation.cancelReservation(cancelReason);
+        if (reservation.getReservationOpenedAt() != null) {
+            LocalDateTime threshold = reservation.getReservationOpenedAt().plusMinutes(30);
+            if (!now.isAfter(threshold)) {
+                isPenalty = true;
+            }
+        }
 
+        if (!isPenalty) {
+            LocalDateTime threeMonthsAgo = now.minusMonths(3);
+            long cancelCount = reservationRepository.countByUserIdAndStatusAndCancelledAtGreaterThanEqual(
+                    customerId, ReservationStatus.CANCELED, threeMonthsAgo
+            );
+            if (cancelCount >= 3) {
+                isPenalty = true;
+            }
+        }
+
+        if (isPenalty) {
+            reservation.pendingCancel(cancelReason, now.plusHours(1));
+        } else {
+            TimeSlot ts = timeSlotRepository.findByIdWithLock(reservation.getTimeSlot().getId())
+                    .orElseThrow(() -> new RuntimeException("타임슬롯 조회 실패"));
+
+            ts.release(reservation.getGuestCount());
+            redisTemplate.opsForValue().increment("stock:timeslot:" + ts.getId(), reservation.getGuestCount());
+
+            reservation.cancelReservation(cancelReason);
+        }
         return ReservationDto.Response.from(reservation);
     }
 }

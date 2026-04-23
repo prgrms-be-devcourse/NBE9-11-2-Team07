@@ -75,6 +75,4 @@ public class Reservation {
         this.cancelReason = cancelReason;
         this.releaseAt = releaseAt;
     }
-
-
 }
