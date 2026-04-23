@@ -56,14 +56,6 @@ public class ReservationService {
             oldTs.release(reservation.getGuestCount());
             redisTemplate.opsForValue().increment("stock:timeslot:" + oldTs.getId(), reservation.getGuestCount());
 
-            timeSlotRepository.flush();
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-
             oldTs.occupy(request.guestCount());
             redisTemplate.opsForValue().decrement("stock:timeslot:" + oldTs.getId(), request.guestCount());
 
@@ -91,24 +83,7 @@ public class ReservationService {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        boolean isPenalty = false;
-
-        if (reservation.getReservationOpenedAt() != null) {
-            LocalDateTime threshold = reservation.getReservationOpenedAt().plusMinutes(30);
-            if (!now.isAfter(threshold)) {
-                isPenalty = true;
-            }
-        }
-
-        if (!isPenalty) {
-            LocalDateTime threeMonthsAgo = now.minusMonths(3);
-            long cancelCount = reservationRepository.countByUserIdAndStatusAndCancelledAtGreaterThanEqual(
-                    customerId, ReservationStatus.CANCELED, threeMonthsAgo
-            );
-            if (cancelCount >= 3) {
-                isPenalty = true;
-            }
-        }
+        boolean isPenalty = checkPenalty(customerId, reservation, now);
 
         if (isPenalty) {
             reservation.pendingCancel(cancelReason, now.plusHours(1));
@@ -122,5 +97,16 @@ public class ReservationService {
             reservation.cancelReservation(cancelReason);
         }
         return ReservationDto.Response.from(reservation);
+    }
+
+    private boolean checkPenalty(UUID customerId, Reservation reservation, LocalDateTime now) {
+        if (reservation.getReservationOpenedAt() != null &&
+                !now.isAfter(reservation.getReservationOpenedAt().plusMinutes(30))) {
+            return true;
+        }
+        long cancelCount = reservationRepository.countByUserIdAndStatusAndCancelledAtGreaterThanEqual(
+                customerId, ReservationStatus.CANCELED, now.minusMonths(3));
+
+        return cancelCount >= 3;
     }
 }
