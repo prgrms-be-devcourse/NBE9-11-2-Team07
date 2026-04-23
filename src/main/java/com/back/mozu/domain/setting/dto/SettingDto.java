@@ -1,4 +1,13 @@
 package com.back.mozu.domain.setting.dto;
 
-public record SettingDto() {
+import java.time.LocalTime;
+
+public class SettingDto {
+
+    public record GetSettingResponse(
+            Integer totalTables,
+            LocalTime openingTime,
+            LocalTime closingTime
+    ) {
+    }
 }
