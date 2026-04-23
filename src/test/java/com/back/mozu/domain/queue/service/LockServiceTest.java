@@ -8,7 +8,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+// DB와 Redis 주소를 로컬(localhost)로 강제 변경
+@SpringBootTest(properties = {
+        "spring.datasource.url=jdbc:mysql://localhost:3306/moju_db",
+        "spring.data.redis.host=localhost",
+        "spring.data.redis.port=6379"
+})
+
 class LockServiceTest {
 
     @Autowired
@@ -17,7 +23,6 @@ class LockServiceTest {
     @Test
     @DisplayName("락 획득 성공 및 해제")
     void acquireAndReleaseLock() {
-
         // 테스트 데이터 생성
         String timeSlotId = "test-slot-1";
         String token1 = UUID.randomUUID().toString();
@@ -41,7 +46,6 @@ class LockServiceTest {
     @Test
     @DisplayName("다른 사용자가 보유한 락 획득 시도 시 예외 발생")
     void mutualExclusionTest() {
-
         // 테스트 데이터 생성
         String timeSlotId = "test-slot-2";
         String Token = UUID.randomUUID().toString();
@@ -64,7 +68,6 @@ class LockServiceTest {
     @Test
     @DisplayName("다른 사용자의 락 해제 시도시 예외 발생")
     void safeReleaseTest() {
-        
         // 테스트 데이터 생성
         String timeSlotId = "test-slot-3";
         String Token = UUID.randomUUID().toString();

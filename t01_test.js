@@ -7,11 +7,11 @@ export const options = {
 };
 
 export default function () {
-    const url = 'http://localhost:8080/api/queues/attempts';
+    const url = 'http://localhost:8080/api/v1/reservations/attempts';
     const payload = JSON.stringify({
-        date: '2026-04-21',
-        time: '12:00:00',
-        guestCount: 2
+        date: '2026-04-22',
+        time: '15:00:00',
+        guestCount: 1
     });
 
     const params = {
@@ -41,8 +41,8 @@ export default function () {
     });
 
     console.log('\n================================');
-    console.log('✅ 성공한 요청: ' + successCount + '건');
-    console.log('❌ 실패한 요청: ' + failCount + '건 (동시성 제어 방어 성공)');
+    console.log(`✅ 성공한 요청: ${successCount}건`);
+    console.log(`❌ 실패한 요청: ${failCount}건`);
     console.log('================================\n');
 
     check(successCount, {

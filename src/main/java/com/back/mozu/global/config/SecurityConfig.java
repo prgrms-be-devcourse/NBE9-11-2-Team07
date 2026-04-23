@@ -12,6 +12,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -42,9 +43,9 @@ public class SecurityConfig {
     @Order(0)
     public SecurityFilterChain monitoringFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/actuator/**") // 이 경로로 들어오면 이 체인이 담당함
+                .securityMatcher("/actuator/**")
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll() // 무조건 통과
+                        .anyRequest().permitAll()
                 )
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -65,13 +66,13 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
+                                .anyRequest().permitAll()
 //                        .requestMatchers("/api/v1/admin/auth/**").permitAll()
 //                        .requestMatchers("/api/v1/admin/holidays").permitAll()
 //                        .anyRequest().hasRole("ADMIN")
-                );
-//                .addFilterBefore(jwtAuthenticationFilter,
-//                        UsernamePasswordAuthenticationFilter.class);
+                )
+                .addFilterBefore(jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -112,16 +113,16 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
+                                .anyRequest().permitAll()
 //                        .requestMatchers(
 //                                "/swagger-ui.html",
 //                                "/swagger-ui/**",
 //                                "/v3/api-docs/**"
 //                        ).permitAll()
 //                        .anyRequest().authenticated()
-                );
-//                .addFilterBefore(jwtAuthenticationFilter,
-//                        UsernamePasswordAuthenticationFilter.class);
+                )
+                .addFilterBefore(jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

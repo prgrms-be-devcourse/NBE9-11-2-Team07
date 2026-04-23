@@ -1,5 +1,8 @@
 package com.back.mozu.domain.queue.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.back.mozu.domain.customer.entity.Customer;
 import com.back.mozu.domain.customer.repository.CustomerRepository;
 import com.back.mozu.domain.queue.dto.QueueDto.AttemptRequest;
@@ -11,6 +14,11 @@ import com.back.mozu.domain.reservation.repository.ReservationRepository;
 import com.back.mozu.domain.reservation.repository.TimeSlotRepository;
 import com.back.mozu.domain.reservation.service.ReservationAsyncProcessor;
 import com.back.mozu.global.redis.RedisUtil;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,15 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Redis 대기열 관련 테스트
@@ -50,7 +49,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  *   테스트 간 같은 타임슬롯을 공유하면 다른 테스트의 예약 데이터가 섞여서 순번이 꼬임
  *   전용 슬롯을 쓰면 각 테스트가 완전히 독립적으로 실행됨
  */
-@SpringBootTest
+@SpringBootTest(properties = {
+        "spring.datasource.url=jdbc:mysql://localhost:3306/moju_db?createDatabaseIfNotExist=true&serverTimezone=Asia/Seoul",
+        "spring.datasource.username=root",
+        "spring.datasource.password=root",
+
+        "spring.data.redis.host=localhost",
+        "spring.data.redis.port=6379"
+})
+
 class QueueServiceRedisTest {
 
     @Autowired
@@ -188,7 +195,7 @@ class QueueServiceRedisTest {
             responses.add(queueService.enqueueAttempt(
                     c.getId(),
                     new AttemptRequest(slot.getDate(), slot.getTime(), 1)));
-            Thread.sleep(100);
+            Thread.sleep(1000);
         }
 
         // afterCommit 콜백 완료 대기
@@ -222,7 +229,7 @@ class QueueServiceRedisTest {
             responses.add(queueService.enqueueAttempt(
                     c.getId(),
                     new AttemptRequest(slot.getDate(), slot.getTime(), 1)));
-            Thread.sleep(100);
+            Thread.sleep(1000);
         }
 
         // afterCommit 완료 대기
