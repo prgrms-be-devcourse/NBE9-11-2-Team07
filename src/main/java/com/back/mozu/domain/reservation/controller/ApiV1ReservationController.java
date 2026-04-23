@@ -21,58 +21,72 @@ public class ApiV1ReservationController {
     private final Rq rq;
 
     @GetMapping("/")
-    public RsData<List<ReservationDto.Response>> getMyReservations(
-            @RequestHeader(value = "X-USER-ID", required = false) String xUserId
-    ) {
-        UUID customerId = resolveId(xUserId);
-        if (customerId == null) {
+    public RsData<List<ReservationDto.Response>> getMyReservations() {
+
+        // Rq를 통해 현재 유저 확보
+        Customer actor = rq.getActor();
+
+        // 로그인 안 된 상태면 바로 쳐내기
+        if (actor == null) {
             return RsData.of("401", "로그인이 필요한 서비스입니다.", null);
         }
 
-        List<ReservationDto.Response> myReservations = reservationService.getMyReservation(customerId);
-        return new RsData<>("예약 목록 조회에 성공했습니다.", "200", myReservations);
+        // 내 예약 목록 가져오기
+        List<ReservationDto.Response> myReservations = reservationService.getMyReservation(actor.getId());
+
+        // 유저들의 모든 예약을 리스트 형태로 RsData 담아서 전달
+        return new RsData<>(
+                "예약 목록 조회에 성공했습니다.",
+                "200",
+                myReservations
+        );
     }
 
     @PatchMapping("/{reservationId}")
     public RsData<ReservationDto.Response> modifyMyReservation(
             @PathVariable UUID reservationId,
-            @Valid @RequestBody ReservationDto.Request request,
-            @RequestHeader(value = "X-USER-ID", required = false) String xUserId) { // 👈 헤더 추가
+            @Valid @RequestBody ReservationDto.Request request) {
 
-        UUID customerId = resolveId(xUserId);
-        if (customerId == null) {
+        // Rq를 통해 현재 유저 확보
+        Customer actor = rq.getActor();
+
+        // 보안 방어: 로그인 여부 체크
+        if (actor == null) {
             return RsData.of("401", "로그인이 필요한 서비스입니다.", null);
         }
 
+        // 수정 서비스 로직 실행 후 결과물 받아오기
         ReservationDto.Response modifiedReservation =
-                reservationService.modifyMyReservation(reservationId, customerId, request);
+                reservationService.modifyMyReservation(reservationId, actor.getId(), request);
 
-        return new RsData<>("예약 수정에 성공했습니다.", "200", modifiedReservation);
+        // RsData 담아서 전달
+        return new RsData<>(
+                "예약 수정에 성공했습니다.",
+                "200",
+                modifiedReservation
+        );
     }
 
     @PostMapping("/{reservationId}/cancel")
-    public RsData<ReservationDto.Response> cancelMyReservation(
-            @PathVariable UUID reservationId,
-            @RequestBody ReservationDto.CancelRequest request,
-            @RequestHeader(value = "X-USER-ID", required = false) String xUserId) {
+    public RsData<ReservationDto.Response> cancelMyReservation(@PathVariable UUID reservationId,@RequestBody ReservationDto.CancelRequest request) {
 
-        UUID customerId = resolveId(xUserId);
-        if (customerId == null) {
+        // Rq를 통해 현재 유저 확보
+        Customer actor = rq.getActor();
+
+        // 보안 방어: 로그인 여부 체크
+        if (actor == null) {
             return RsData.of("401", "로그인이 필요한 서비스입니다.", null);
         }
 
+        // 취소 서비스 로직 실행
         ReservationDto.Response cancelledReservation =
-                reservationService.cancelMyReservation(customerId, reservationId, request.cancelReason());
+                reservationService.cancelMyReservation(actor.getId(), reservationId, request.cancelReason());
 
-        return new RsData<>("예약 취소에 성공했습니다.", "200", cancelledReservation);
-    }
-
-    private UUID resolveId(String xUserId) {
-        if (xUserId != null && !xUserId.isEmpty()) {
-            return UUID.fromString(xUserId);
-        }
-
-        Customer actor = rq.getActor();
-        return (actor != null) ? actor.getId() : null;
+        // RsData 담아서 전달
+        return new RsData<>(
+                "예약 취소에 성공했습니다.",
+                "200",
+                cancelledReservation
+        );
     }
 }
