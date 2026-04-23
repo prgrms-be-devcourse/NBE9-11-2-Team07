@@ -24,6 +24,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
     // 추가
     int countByUserIdAndStatusAndCancelledAtAfter(UUID userId, ReservationStatus status, LocalDateTime dateTime);
     List<Reservation> findAllByStatusAndReleaseAtBefore(ReservationStatus status, LocalDateTime dateTime);
+    List<Reservation> findAllByStatusAndCreatedAtBefore(ReservationStatus status, LocalDateTime createdAt);
     List<Reservation> findAllByStatus(ReservationStatus status);
     List<Reservation> findByTimeSlotIdAndStatusOrderByCreatedAt(UUID timeSlotId, ReservationStatus status);
 }

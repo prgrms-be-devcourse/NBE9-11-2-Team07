@@ -1,20 +1,16 @@
 package com.back.mozu.domain.queue.controller;
 
+import com.back.mozu.domain.customer.entity.Customer;
 import com.back.mozu.domain.queue.dto.QueueDto.AttemptRequest;
 import com.back.mozu.domain.queue.dto.QueueDto.AttemptResponse;
 import com.back.mozu.domain.queue.dto.QueueDto.StatusResponse;
 import com.back.mozu.domain.queue.service.QueueService;
-import com.back.mozu.global.response.RsData;
-import java.util.UUID;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import com.back.mozu.domain.customer.entity.Customer;
 import com.back.mozu.global.response.Rq;
+import com.back.mozu.global.response.RsData;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 // 외부 API 요청 처리 컨트롤러
 @RestController
